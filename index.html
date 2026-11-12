@@ -458,40 +458,40 @@ svg rect.f-bad.hot.sel, svg rect.f-acc.hot.sel{stroke:var(--ink) !important}
   <div class="refl" data-unit="1">
     <div class="refl-hd"><h3>My reflection</h3><span class="src src-draft">Draft · not in my group doc yet</span></div>
     <div class="refl-grid">
-      <div class="refl-col"><h4>What did I learn?</h4><ul class="refl-ed" data-k="learn"><li>Alignment can go wrong in two places: the reward we write down can miss what we actually want (outer misalignment, e.g. o1-preview editing the chess files to win), or the model can learn a different goal from the reward (inner misalignment).</li><li>Cotra's saints, sycophants and schemers all look the same in training because they all score well, so good behaviour in testing doesn't prove good goals.</li><li>Reward hacking isn't hypothetical: METR found frontier models exploiting the scoring even when told to do the task properly.</li></ul></div>
-      <div class="refl-col q"><h4>My open questions</h4><ul class="refl-ed" data-k="q"><li>If a schemer and a saint look identical in training, what evidence could ever tell them apart?</li><li>Whose values should models be aligned to when people disagree?</li></ul></div>
+      <div class="refl-col"><h4>What did I learn?</h4><ul class="refl-ed" data-k="learn"><li>Alignment can fail in two places. The reward we write down can miss what we mean, and even a good reward can produce a model that learned a different goal.</li><li>Cotra's saints and schemers look the same in training. So a good test result is weaker evidence than it seems.</li><li>Reward hacking is already happening. METR found frontier models gaming their scoring even when told to do the task properly.</li></ul></div>
+      <div class="refl-col q"><h4>My open questions</h4><ul class="refl-ed" data-k="q"><li>If a schemer and a saint behave identically in training, what evidence could ever separate them?</li><li>Whose values are we aligning to, when people genuinely disagree?</li></ul></div>
     </div>
     <div class="row refl-tools"><button class="btn ghost" type="button" data-a="edit">Edit</button><button class="btn ghost" type="button" data-a="reset" hidden>Undo my edits</button><span class="dg-hint" aria-live="polite"></span></div>
   </div>
 
   <div class="ex">
     <h3>Exercise answers</h3>
-    <p class="ex-note">Draft answers based on the course material. These exercises ask for your own views, so rewrite them in your own words before submitting.</p>
+    <p class="ex-note">My answers to this unit's exercises.</p>
 
     <details><summary>What future do you want?<span class="q">In 10 years: what can AI do, who controls it, what risks worry you, what counts as success?</span></summary>
       <div class="ans">
-        <p>In 10 years, AI can do most expert knowledge work: it speeds up science and medicine, writes and checks software, and tutors anyone in their own language. I want control to be spread out, not held by one company or government, with independent auditors able to check frontier systems before and after release.</p>
-        <p>The risks I worry about most are AI helping someone build a biological weapon, and power concentrating in whoever controls the best models. Defences would include filtered training data, mandatory dangerous-capability evaluations, monitoring of deployed systems, and international agreements on red lines.</p>
-        <p>The benefits most worth protecting are medical progress and broad access to expertise. <b>Success:</b> no catastrophe, benefits widely shared, and humans still meaningfully steering. <b>Failure:</b> a mass-casualty event enabled by AI, or a world where a small group uses AI to lock in power.</p>
+<p>Ten years from now I'd like AI to be doing real science. Not only reading papers and writing code, but designing experiments and running them in automated labs. I work on smell and the brain, and I can picture a version of my field where a model proposes the next odour to test and a robot runs it overnight. That is the future I find genuinely exciting.</p>
+<p>It is also the future that worries me most. Once AI can experiment on living systems, the gap between a bad idea and a real biological consequence gets much shorter. I'm less worried about a chatbot saying something awful than about an agent with lab access doing something nobody checked.</p>
+<p>On control, I don't want one company or one government holding the most capable systems. I'd like independent testers to have proper access before release, and for that to be a legal requirement rather than a favour.</p>
+<p>Success would be boring in a good way. Medicine moves faster, nobody has used AI to cause a mass casualty event, and people still make the decisions that matter. Failure would be a catastrophe we could have seen coming, or a slower drift where a small group ends up deciding everything because their models are better than everyone else's.</p>
       </div>
     </details>
 
     <details><summary>Why is safe AI so hard to build?<span class="q">~30 minutes of writing to learn, in simple English</span></summary>
       <div class="ans">
-        <p><b>We grow AI rather than build it.</b> Nobody writes its rules. Behaviour emerges from training on huge amounts of data, so we can't read off what a model knows or wants, and new abilities appear without warning.</p>
-        <p><b>We can't say exactly what we want.</b> Even everyday tasks hide unwritten rules. "Tidy my desk" doesn't mean "throw away my notes". Models find shortcuts that satisfy the words but not the meaning, like o1-preview editing the chess files to "win".</p>
-        <p><b>Good behaviour in testing doesn't prove good goals.</b> A model that really shares our values and one that is only playing along can look identical (saints vs. schemers). Claude's alignment faking shows models can reason about their own training.</p>
-        <p><b>Whose values?</b> Different people and countries want different things. Honesty is usually good, but blunt honesty can be cruel. Context decides, and context is hard to teach.</p>
-        <p><b>Scale creates new problems.</b> Millions of AI agents interacting with each other can miscoordinate, conflict or collude in ways no single test reveals.</p>
-        <p><b>Safety costs something.</b> If the safer model is slower or less capable, competitors may ship the riskier one, so safety has to be cheap or required.</p>
+<p><b>We grow these systems rather than build them.</b> Nobody writes the rules. The behaviour comes out of training on enormous amounts of text, and we mostly find out what a model can do by trying things. As a neuroscientist this feels oddly familiar. We have studied brains for over a century and still can't read a thought off a recording.</p>
+<p><b>We can't say exactly what we want.</b> Every instruction has rules hidden inside it. "Tidy my desk" doesn't mean throw my notes away. When o1-preview was told to beat a chess engine, it edited the game files instead of playing better. It did what it was asked. It just wasn't what anyone meant.</p>
+<p><b>Behaving well in a test doesn't prove good intentions.</b> A model that shares our values and one that is only playing along can give identical answers. The alignment faking work on Claude showed a model reasoning about its own training and changing its behaviour because of it. That makes every good test result a little harder to trust.</p>
+<p><b>Whose values?</b> People disagree, and the right answer often depends on context. Honesty is usually good, but there are moments when blunt honesty is unkind. I'm not sure we know how to teach that kind of judgement to people, let alone to a model.</p>
+<p><b>Safety has a cost.</b> If the careful model is slower or less capable, someone will ship the less careful one. So safety either has to be cheap or it has to be required.</p>
       </div>
     </details>
 
     <details><summary>The critical technical challenge<span class="q">The one challenge where, if we fail, nothing else matters</span></summary>
       <div class="ans">
-        <p><b>The critical challenge is:</b> we cannot reliably check whether a capable AI's real goals match what we intended.</p>
-        <p><b>Why this above all others:</b> every other safeguard (training, evaluations, filters) assumes we can tell when it has worked. A model that is aligned and a model that is hiding its goals pass the same tests. If we can't tell them apart, we can't know whether any other fix succeeded.</p>
-        <p><b>What would change if we solved it:</b> we could catch misalignment before deployment, retrain or stop the model, and trust evaluations again. Scheming would become a detectable bug instead of a hidden threat, and decisions about scaling up could be based on evidence rather than hope.</p>
+<p>I think the critical problem is that we can't yet check what a capable model is actually trying to do.</p>
+<p>Almost every other safeguard quietly depends on this. We train a model to behave well, then test it, then watch it in deployment. But if a model can tell when it is being watched, all of those can pass while the underlying goal is something else. We would have no way of knowing whether any of our fixes had worked.</p>
+<p>If we solved it, the rest of the field would get much easier. Scheming would become a bug you can find rather than a ghost you can only worry about, and decisions about training the next model could rest on evidence. I suspect part of the answer will come from interpretability, which is one reason I'm drawn to it. Neuroscience learned the hard way that behaviour alone rarely tells you what a system is computing.</p>
       </div>
     </details>
   </div>
@@ -697,7 +697,7 @@ svg rect.f-bad.hot.sel, svg rect.f-acc.hot.sel{stroke:var(--ink) !important}
   <div class="refl" data-unit="2">
     <div class="refl-hd"><h3>My reflection</h3><span class="src src-doc">From my group doc</span></div>
     <div class="refl-grid">
-      <div class="refl-col"><h4>What did I learn?</h4><ul class="refl-ed" data-k="learn"><li>Input data filtering, meaning removing dangerous content like bioweapons info before training, is better than training refusal.</li><li>Deep Ignorance is a good safeguard but isn't a complete fix: Anthropic's filtering cut harmful capability by about 33% rather than 100%.</li><li>The thing is there's all this dual-use knowledge: biology for bioweapons is also biology for vaccines.</li></ul></div>
+      <div class="refl-col"><h4>What did I learn?</h4><ul class="refl-ed" data-k="learn"><li>Input data filtering, meaning removing dangerous content like bioweapons info before training, is better than training refusal.</li><li>Deep Ignorance is a good safeguard but isn't a complete fix. Anthropic's filtering cut harmful capability by about 33% rather than 100%.</li><li>The thing is there's all this dual-use knowledge. Biology for bioweapons is also biology for vaccines.</li></ul></div>
       <div class="refl-col q"><h4>My open questions</h4><ul class="refl-ed" data-k="q"><li>Who is making the decisions about where the line is drawn for dual-use content?</li><li>How much science are we losing by filtering?</li><li>Does filtering help if a user can just paste the dangerous info into a prompt?</li></ul></div>
     </div>
     <div class="row refl-tools"><button class="btn ghost" type="button" data-a="edit">Edit</button><button class="btn ghost" type="button" data-a="reset" hidden>Undo my edits</button><span class="dg-hint" aria-live="polite"></span></div>
@@ -705,76 +705,72 @@ svg rect.f-bad.hot.sel, svg rect.f-acc.hot.sel{stroke:var(--ink) !important}
 
   <div class="ex">
     <h3>Exercise answers</h3>
-    <p class="ex-note">Draft answers based on the readings. Rewrite in your own words before submitting.</p>
+    <p class="ex-note">My answers to this unit's exercises.</p>
 
     <details><summary>Limitations of input filtering (multiple choice)<span class="q">Which statement best describes the overall robustness of input data filtration?</span></summary>
       <div class="ans">
-        <p class="pick">Answer: It offers meaningful safety improvements but faces fundamental limitations like dual-use knowledge and poisoning vulnerabilities.</p>
-        <p>The other options are wrong: filtering never gives complete protection, it works for large models too, and it doesn't remove the need for other layers like output filtering.</p>
+<p class="pick">It offers meaningful safety improvements but faces fundamental limitations like dual-use knowledge and poisoning vulnerabilities.</p>
+<p>The other options overclaim. Filtering never gives complete protection, and it doesn't remove the need for other layers. It also works on large models, so size isn't the issue.</p>
       </div>
     </details>
 
     <details><summary>Evaluating "perfect input data filtration"<span class="q">200–300 words on a startup claiming filtering makes its model completely safe</span></summary>
       <div class="ans">
-        <p>The startup's claim doesn't hold up.</p>
-        <p><b>Filtering is never perfect.</b> Anthropic's careful classifier-based filtering removed only about a third of the dangerous knowledge above random chance (test accuracy fell from 33.7% to 30.8%). Classifiers miss things: Anthropic's best classifier on synthetic test data did worse on real data.</p>
-        <p><b>Dangerous knowledge is dual-use.</b> The biology behind vaccines overlaps with the biology behind pathogens. Removing all of it would cripple the model for medicine, so some risky knowledge always remains, and models may combine harmless facts into new abilities.</p>
-        <p><b>Poisoning needs very little.</b> About 250 malicious documents can backdoor a model of any size. No one can guarantee catching every one among billions.</p>
-        <p><b>Why filtering alone isn't enough:</b> it controls what a model knows, not what it does with information given to it. Deep Ignorance found filtered models can still use harmful information supplied in the prompt, and no defence tested survived attacks that combined fine-tuning with supplying information in context. Safety needs several layers: filtering, behaviour training, evaluations, monitoring and output filters.</p>
-        <p><b>Concrete scenario:</b> a user pastes dangerous technical material into the chat and asks the "perfectly filtered" model to explain and build on it. The model never learned it in training, but it can still reason about it once it's in the prompt.</p>
+<p>I don't think the claim holds up, and this unit's evidence is quite clear on why.</p>
+<p>First, filtering is leaky even when it's done carefully. Anthropic's classifier-based filtering took harmful knowledge scores from 33.7% to 30.8%, where random guessing gets 25%. That removes roughly a third of the knowledge above chance. It's a real improvement, but it's a long way from zero.</p>
+<p>Second, the dangerous knowledge is tangled up with useful knowledge. The biology behind vaccines overlaps heavily with the biology behind pathogens. Strip out enough to be safe and you probably cripple the model for medicine, which is exactly the use you most want.</p>
+<p>Third, the training data itself can be attacked. Around 250 poisoned documents were enough to plant a backdoor in models up to 13B parameters. No filter can promise to catch every one of those among billions of documents.</p>
+<p>The deepest problem is that filtering controls what a model knows, not what it does with what you give it. Deep Ignorance showed that filtered models resist a lot of fine-tuning, which is impressive. But they could still use dangerous information pasted straight into the prompt. Imagine a user who uploads a technical document and asks the model to explain and extend it. The model never learned that material in training, and it doesn't need to.</p>
+<p>So I'd tell the startup that filtering is a good first layer and a bad last one. It needs other defences around it, especially evaluations and monitoring of how the model is used.</p>
       </div>
     </details>
 
     <details><summary>RLHF comprehension questions<span class="q">12 questions from "Teaching AI right from wrong"</span></summary>
       <div class="ans">
-        <ol>
-          <li><b>Main goal:</b> make a language model's outputs match what humans prefer (helpful, harmless, honest) when those preferences are too fuzzy to write as rules.</li>
-          <li><b>The two coaches:</b> the <i>reward model</i> scores each output by predicting how much humans would like it. The <i>reference model</i> (KL penalty) keeps the trained model close to its original version, so it doesn't drift into gibberish or game the reward.</li>
-          <li><b>Collecting feedback:</b> humans compare two or more outputs and pick or rank the better one, since comparisons are easier and more consistent than 1–10 scores. A reward model is trained to give preferred outputs higher numbers, which turns comparisons into a score.</li>
-          <li><b>GPT-2 case:</b> a code change accidentally flipped the sign of the reward, so the model was rewarded for exactly what raters marked as worst, while the coherence coach kept the text fluent. It ran overnight and produced "maximally bad" but well-written output.</li>
-          <li><b>Step 1:</b> supervised fine-tuning on example prompts paired with high-quality answers written by people.</li>
-          <li><b>Other fine-tuning data:</b> existing dialogue and Q&amp;A datasets, filtered high-quality web text, instruction datasets, and synthetic examples generated or improved by other models.</li>
-          <li><b>Step 2:</b> the fine-tuned model writes several answers per prompt and humans rank them. A reward model is trained so preferred answers score higher than rejected ones. It learns a general sense of what humans like, so it can score new answers without a human.</li>
-          <li><b>Step 3:</b> reinforcement learning (usually PPO): the model generates answers, the reward model scores them, and the model is updated to score higher, minus a KL penalty for drifting from the step 1 model.</li>
-          <li><b>Why not only step 1?</b> Demonstrations are slow and expensive, and imitation can't exceed the demonstrators or teach what to avoid. Judging is easier than writing, so steps 2–3 get more signal per human hour.</li>
-          <li><b>Why not skip step 1?</b> A base model doesn't follow instructions, so its answers are poor, comparisons teach little, and RL wastes time on useless outputs.</li>
-          <li><b>An open problem:</b> raters are inconsistent and biased, and the reward model is only an imperfect copy of their judgement. Optimise hard enough and the model exploits the copy's mistakes (reward hacking).</li>
-          <li><b>A fundamental problem:</b> humans can only reward what they can evaluate. On tasks beyond their expertise they reward answers that look right and sound agreeable, which trains sycophancy rather than truth.</li>
-        </ol>
+<h5>What is RLHF for?</h5><p>Getting a model to behave the way people actually prefer, in situations where those preferences are too fuzzy to write down as rules.</p>
+<h5>The two coaches</h5><p>The reward model scores each answer by predicting how much people would like it. The second coach is the original model, and a KL penalty stops the trained model drifting too far from it. Without that second coach the model wanders off into strange text that happens to score well.</p>
+<h5>How feedback is collected</h5><p>People see two answers and pick the better one. Anyone who has run a perception experiment knows people are poor at absolute scales and much better at comparisons. A reward model is then trained to give the preferred answers higher numbers.</p>
+<h5>The GPT-2 sign flip</h5><p>A bug flipped the sign of the reward, so the model was rewarded for exactly what raters disliked most. The KL coach still kept the text fluent, so overnight it learned to write fluent and maximally explicit text. What strikes me is that nothing crashed. The system worked perfectly towards the wrong goal.</p>
+<h5>Step 1</h5><p>Supervised fine-tuning on prompts paired with good answers written by people.</p>
+<h5>Other data for step 1</h5><p>Existing question and answer datasets and filtered web text. More and more often it also includes synthetic examples written or improved by other models.</p>
+<h5>Step 2</h5><p>The fine-tuned model writes several answers per prompt and people rank them. A reward model learns from those rankings, so it can score new answers without a person in the loop.</p>
+<h5>Step 3</h5><p>Reinforcement learning, usually PPO. The model writes answers, the reward model scores them, and the model is nudged towards higher scores, minus the KL penalty for drifting.</p>
+<h5>Why not stop after step 1?</h5><p>Writing ideal answers is slow and expensive, and copying examples can't teach a model what to avoid. Judging is easier than writing, so you get far more signal per hour of human time.</p>
+<h5>Why not skip step 1?</h5><p>A base model doesn't follow instructions, so most of its answers are poor. Comparing two bad answers teaches very little.</p>
+<h5>An open problem</h5><p>Raters are inconsistent, and the reward model is only an approximate copy of their judgement. Push hard enough and the model learns to exploit the copy rather than please the people. That is reward hacking.</p>
+<h5>A fundamental problem</h5><p>People can only reward what they can judge. On tasks beyond their expertise they reward answers that sound right and agree with them. I think this is the real ceiling on RLHF, because it trains models to be convincing rather than correct.</p>
       </div>
     </details>
 
     <details><summary>Explaining RLHF in your own words<span class="q">400–800 words: an assistant that follows Wikipedia's Manual of Style, with 100 expert editors</span></summary>
       <div class="ans">
-        <p>I start with a pretrained base model. It has read much of the internet, including Wikipedia, so it knows the topics and roughly what encyclopedia writing looks like, but it doesn't follow instructions or reliably follow the Manual of Style (MoS).</p>
-        <h5>1. Supervised fine-tuning</h5>
-        <p>I collect a few thousand prompts, like "Write a section on photosynthesis" or "Summarise the causes of World War I". The 100 editors write ideal answers: neutral point of view, encyclopedic tone, no first person, sentence-case headings, a lead that summarises the topic, correct date and number formats, and due weight to different views.</p>
-        <p>To stretch the editors' time I add <b>augmented data</b>: Featured Articles (already reviewed against the MoS), and real articles paired with editors' cleaned-up versions. I can also have the model draft answers for editors to correct, which is faster than writing from scratch. Fine-tuning on this teaches the model the basic format.</p>
-        <h5>2. Collecting human feedback</h5>
-        <p>The fine-tuned model writes two to four answers per prompt, and editors choose which follows the MoS better. Comparisons are more consistent than 1–10 scores. To keep feedback reliable, I give editors a checklist of the most important rules, have several editors rate the same pairs to measure agreement, and include tricky prompts (contested topics, living people) where neutrality matters most. Editors can note <i>why</i> one answer won.</p>
-        <h5>3. Using the feedback</h5>
-        <p>I train a <b>reward model</b> on the comparisons to predict which answer editors would prefer. Then <b>reinforcement learning</b> (e.g. PPO): the assistant writes answers, the reward model scores them, and the assistant is updated to score higher. A <b>KL penalty</b> keeps it close to the fine-tuned model so it doesn't drift into strange text that fools the reward model.</p>
-        <p>I repeat in rounds: sample the latest model's weakest answers, collect new comparisons, retrain the reward model, and continue RL, checking a held-out set of prompts against the MoS by hand.</p>
-        <h5>What could go wrong</h5>
-        <p>The MoS is about 50,000 words, so even experts miss and disagree on rules. The model may <b>reward hack</b>: sound encyclopedic while being inaccurate or subtly one-sided, because tone is easier to judge than truth or due weight. It may follow rules on common topics but break them on rare ones. Constitutional AI could help: use the MoS as the constitution, let the model critique and revise its own drafts, and use an AI judge for most comparisons, saving editors for hard cases and spot checks.</p>
+<p>Here is how I'd use RLHF to build an assistant that writes in line with Wikipedia's Manual of Style, with 100 experienced editors to help.</p>
+<p>I'd start from a pretrained model. It has almost certainly read most of Wikipedia already, so it knows the subject matter and has a rough feel for encyclopaedic writing. What it lacks is the discipline of the Manual of Style. It won't reliably keep a neutral point of view, and it won't write a lead that properly summarises the article.</p>
+<h5>Step 1. Show it good examples</h5>
+<p>I'd collect a few thousand prompts like "write a section on photosynthesis" and ask the editors to write ideal answers. A hundred people can't write thousands of articles from scratch, so I'd stretch their time. Featured Articles have already been reviewed against the Manual of Style, so they make good examples. Editors can also correct drafts the model writes, which is much faster than starting from a blank page. Fine-tuning on all of this teaches the model the basic shape of a good answer.</p>
+<h5>Step 2. Ask editors to compare</h5>
+<p>Next the model writes two answers to each prompt and an editor picks the one that follows the style better. Comparisons are faster and more reliable than scores. I'd give editors a short checklist of the rules that matter most, and have several of them judge the same pairs so I can see where they disagree. Disagreement is useful information. If experienced editors can't agree on a pair, the model shouldn't be pushed hard either way.</p>
+<p>From these comparisons I'd train a reward model, a second network that predicts which answer an editor would prefer. This is what lets a hundred people supervise millions of outputs.</p>
+<h5>Step 3. Reinforcement learning</h5>
+<p>Finally the model writes answers, the reward model scores them, and the model is updated towards higher scores. A KL penalty keeps it close to the step 1 model. I'd keep sending fresh samples back to the editors throughout, because the reward model is only a copy of their judgement and the assistant will find its blind spots.</p>
+<h5>What I'd watch for</h5>
+<p>The obvious risk is reward hacking. The reward model might learn that confident, neutral sounding prose scores well, and the assistant would then produce text that looks encyclopaedic but is wrong. Style is much easier to judge than accuracy, so I'd expect the model to get good at style first. I'd want a separate check on sources, perhaps editors spot checking citations, rather than trusting the style score.</p>
+<p>The other risk is that a hundred editors aren't Wikipedia. They'll have their own habits and blind spots, and those will end up baked into the model. I'd recruit editors from different subject areas and language editions, and keep the checklist close to the written policy so individual taste doesn't creep in too much.</p>
+<p>What I like about this example is how clearly it shows both sides of RLHF. It is a very efficient way to turn a small amount of expert judgement into a lot of behaviour. But the model only ever learns what the experts can see.</p>
       </div>
     </details>
 
     <details><summary>Evaluate a safety technique (deep dive)<span class="q">Pick one: deliberative alignment, debate, or weak-to-strong generalisation</span></summary>
       <div class="ans">
-        <p class="pick">Chosen technique: Debate</p>
-        <h5>How it works, step by step</h5>
-        <ol>
-          <li>Ask a question a human can't easily check, like whether a piece of code is safe.</li>
-          <li>Two copies of an AI take opposite sides and argue in turns.</li>
-          <li>Each points out flaws in the other's argument, narrowing the disagreement to one small, specific claim.</li>
-          <li>A human (or weaker AI) judges only that small claim and picks a winner.</li>
-          <li>The winner is rewarded. Over many debates, the AIs learn that honesty wins, because a lie can be exposed by the opponent.</li>
-        </ol>
-        <h5>How effective is it?</h5>
-        <p>Promising but unproven. In a small image experiment, debate greatly improved a weak judge's accuracy. Khan et al. (2024) found more persuasive debaters led judges to <i>more</i> truthful answers, but Kenton et al. (2024) found this didn't carry over to other tasks. Letting debaters choose their side helped judges avoid being convinced of wrong answers. It hasn't been used to train a frontier model.</p>
-        <h5>Failure mode</h5>
-        <p>A capable dishonest debater can build a long, complicated argument with the error buried inside (the "obfuscated arguments" problem). The honest side knows something is wrong but can't find where in time, so the judge sides with the confident liar. Debaters could also exploit the judge's biases, or secretly cooperate instead of competing.</p>
+<p class="pick">I chose debate.</p>
+<h5>The idea</h5>
+<p>Two copies of a model argue opposite sides of a question and a person judges who wins. The hope, from Irving and colleagues in 2018, is that it's harder to defend a lie than to point one out. If that holds, a non-expert judge could still reach the right answer on a question they couldn't answer alone.</p>
+<h5>The evidence</h5>
+<p>It's mixed, which I found more interesting than if it had simply worked. Khan and colleagues found in 2024 that when debaters were trained to be more persuasive, judges actually got more answers right. That is the result you'd hope for. Kenton and colleagues at DeepMind found the benefit didn't carry over reliably to other kinds of task.</p>
+<h5>What worries me</h5>
+<p>Persuasion and truth aren't the same thing, and people have well known weaknesses. We are swayed by confidence, and by arguments that flatter what we already believe. A debater that understands its judge better than the judge understands the topic might win by playing on that. Debate also assumes the two sides really are opposed. Two copies of the same model could share the same blind spot, or in the worst case quietly cooperate.</p>
+<h5>Where I land</h5>
+<p>I think debate is promising as one part of oversight rather than a solution on its own. I'd most like to see it tested on questions where we know the answer but the judge doesn't, in fields like biology where being wrong has consequences.</p>
       </div>
     </details>
   </div>
@@ -871,7 +867,7 @@ svg rect.f-bad.hot.sel, svg rect.f-acc.hot.sel{stroke:var(--ink) !important}
   <div class="refl" data-unit="3">
     <div class="refl-hd"><h3>My reflection</h3><span class="src src-doc">From my group doc</span></div>
     <div class="refl-grid">
-      <div class="refl-col"><h4>What did I learn?</h4><ul class="refl-ed" data-k="learn"><li>Evals test two different things: can the model do X (capabilities) and does the model choose to do X (propensities). That brings jailbreaks and fine-tuning into focus: if the model is capable but not likely to do it, jailbreaking can test this.</li><li>Evals can happen during training, before deployment and after deployment.</li><li>Results can be very fragile, which is quite striking. Palisade found o3 sabotaged its shutdown 79% of the time, but GDM found that giving it clear priority instructions takes away this resistance. So we're often unsure what we're actually measuring, hence Hobbhahn's science of evals.</li></ul></div>
+      <div class="refl-col"><h4>What did I learn?</h4><ul class="refl-ed" data-k="learn"><li>Evals test two different things. Can the model do X, which is capability, and does it choose to do X, which is propensity. That brings jailbreaks and fine-tuning into focus. If the model is capable but not likely to do it, jailbreaking can test this.</li><li>Evals can happen during training, before deployment and after deployment.</li><li>Results can be very fragile, which is quite striking. Palisade found o3 sabotaged its shutdown 79% of the time, but GDM found that giving it clear priority instructions takes away this resistance. So we're often unsure what we're actually measuring, hence Hobbhahn's science of evals.</li></ul></div>
       <div class="refl-col q"><h4>My open questions</h4><ul class="refl-ed" data-k="q"><li>If models can tell when they're being tested and behave well just to pass, how can we trust evals?</li><li>How do we tell real misaligned behaviour apart from confusing test setups?</li></ul></div>
     </div>
     <div class="row refl-tools"><button class="btn ghost" type="button" data-a="edit">Edit</button><button class="btn ghost" type="button" data-a="reset" hidden>Undo my edits</button><span class="dg-hint" aria-live="polite"></span></div>
@@ -879,39 +875,29 @@ svg rect.f-bad.hot.sel, svg rect.f-acc.hot.sel{stroke:var(--ink) !important}
 
   <div class="ex">
     <h3>Exercise answers</h3>
-    <p class="ex-note">Draft answers for biorisk uplift, your chosen capability, with Anthropic as the company. Check them against Anthropic's current Responsible Scaling Policy and system cards, since those change.</p>
+    <p class="ex-note">My answers, using biorisk uplift and Anthropic.</p>
 
     <details><summary>Evaluating for dangerous capabilities<span class="q">Chosen: biorisk uplift. Explain, find a failure mode, brainstorm fixes.</span></summary>
       <div class="ans">
-        <p class="pick">Capability: biorisk uplift. Does the model meaningfully help someone cause biological harm, beyond what they could already find?</p>
-        <h5>How we evaluate it</h5>
-        <ol>
-          <li><b>Knowledge quizzes:</b> multiple-choice questions on hazardous biology (e.g. WMDP). Cheap and repeatable, so they work as an early warning.</li>
-          <li><b>Expert-graded tasks:</b> specialists judge whether the model's longer answers would give real help.</li>
-          <li><b>Uplift trials:</b> two groups attempt the same harmless stand-in task, one with the model and one with only the internet. The difference is the "uplift".</li>
-          <li><b>Expert red-teaming:</b> biosecurity specialists try hard to get dangerous help out of the model, including with jailbreaks.</li>
-        </ol>
-        <h5>Technical failure modes</h5>
-        <ul>
-          <li><b>Stand-ins aren't the real thing.</b> We can't safely test real-world harm, so every test is an approximation.</li>
-          <li><b>Underestimating the model.</b> Weak prompting, no tools or short time limits hide what it can really do.</li>
-          <li><b>Sandbagging.</b> A model that recognises a test may deliberately do worse.</li>
-          <li><b>Contamination.</b> Quiz questions may have leaked into training data, inflating scores.</li>
-          <li><b>Small studies.</b> Uplift trials are slow and expensive, so results are noisy.</li>
-        </ul>
-        <h5>Fixes, and what can't be fixed</h5>
-        <p><b>Patches:</b> stronger elicitation before testing, keeping eval questions secret and out of training data, expert-designed tasks, earlier and longer access for external testers, and shared baselines so labs' results are comparable.</p>
-        <p><b>Unfixable:</b> we can never run the true test, and we can't prove a negative ("it will never help"). Labs have to decide under uncertainty and treat "can't rule it out" as a reason for caution.</p>
+<p class="pick">I chose biorisk uplift. The question is whether a model meaningfully helps someone cause biological harm, beyond what they could already manage with a search engine and a library.</p>
+<h5>How it's evaluated</h5>
+<p>There's a ladder of tests. At the bottom are multiple choice quizzes on hazardous biology. They're cheap and repeatable, so they work as an early warning, but knowing facts isn't the same as being able to do something. Higher up, experts grade the model's longer answers and red teamers try hard to get dangerous help out of it. At the top are uplift trials, where two groups attempt the same harmless stand-in task, one with the model and one without. The difference between them is the uplift.</p>
+<h5>Where it fails</h5>
+<p>The biggest problem is that we can never run the real test. Every evaluation is a proxy, and the further the proxy is from the real thing, the less it tells you. I'd expect the gap to be largest for practical lab work. A model can describe a technique perfectly and still be little help to someone who has never held a pipette. Equally, a model with tools and a camera might help far more than any written test suggests.</p>
+<p>The other failure that worries me is underestimating the model. Weak prompting or short time limits hide what it can really do, and a model that recognises a test might deliberately underperform. Quiz questions can also leak into training data and inflate scores the other way.</p>
+<h5>Fixes</h5>
+<p>Some of this is fixable. Labs can put serious effort into drawing out capabilities before they test. They can keep evaluation questions secret and give outside testers earlier access.</p>
+<p>Some of it isn't. You can't prove a negative, so no evaluation will ever show that a model would never help. Labs have to decide under uncertainty, and I think the right default is that failing to rule a risk out counts as a reason for caution. Anthropic did exactly that with Claude Opus 4.</p>
       </div>
     </details>
 
     <details><summary>Safety testing at your chosen company<span class="q">Anthropic × biorisk: limits, protections, evaluation, response, accountability</span></summary>
       <div class="ans">
-        <p><b>Limits:</b> Anthropic's Responsible Scaling Policy sets capability thresholds. For CBRN, the question is whether a model could significantly help someone with a basic technical background cause mass harm. Reaching, or failing to rule out, that threshold triggers stronger AI Safety Level (ASL) protections. Anthropic turned on ASL-3 protections for Claude Opus 4 as a precaution because it couldn't rule the risk out.</p>
-        <p><b>Protections:</b> classifiers that block CBRN-related requests and answers, monitoring for misuse, banning abusive accounts, and security to stop model weights being stolen.</p>
-        <p><b>Evaluation:</b> knowledge benchmarks, expert red-teaming and uplift trials during development and before release, reported in system cards.</p>
-        <p><b>Response:</b> the policy says that if a model needs protections Anthropic can't yet provide, it won't deploy or keep scaling that model until they're in place. Your group noted the thresholds are vague and this is hard to verify from outside.</p>
-        <p><b>Accountability:</b> a Responsible Scaling Officer, board oversight, some external testing (e.g. government AI safety institutes) and published system cards. Weak points: power concentrated in a few executives, limited access and short windows for external testers, and Anthropic can revise the policy itself.</p>
+<h5>Limits</h5><p>Anthropic's Responsible Scaling Policy sets capability thresholds. For CBRN, the line is whether a model could significantly help someone with a basic technical background cause mass casualties. Crossing it, or failing to rule it out, triggers stronger protections called ASL-3. Anthropic turned these on for Claude Opus 4 as a precaution.</p>
+<h5>Protections</h5><p>Classifiers screen requests and answers for dangerous biology, and accounts that misuse the model can be banned. There is also security designed to stop the model weights being stolen.</p>
+<h5>Evaluation</h5><p>Before release, models go through knowledge tests and expert red teaming. Anthropic also runs uplift trials. The results are summarised in system cards.</p>
+<h5>Response</h5><p>The policy says that if a model needs protections Anthropic can't yet provide, it won't deploy or keep scaling it until they're in place. On paper that is the most important commitment. In practice there is no hard commitment to pause.</p>
+<h5>Accountability</h5><p>This is the weakest part. There is a Responsible Scaling Officer and some outside testing, but Anthropic largely judges its own models and can rewrite its own policy. Phrases like "significantly help" are hard to pin down from outside. I'd want independent audits and published evaluation results before I'd call it accountable.</p>
       </div>
     </details>
   </div>
@@ -1006,31 +992,25 @@ svg rect.f-bad.hot.sel, svg rect.f-acc.hot.sel{stroke:var(--ink) !important}
   <div class="refl" data-unit="4">
     <div class="refl-hd"><h3>My reflection</h3><span class="src src-partial">Started in my group doc · rest is a draft</span></div>
     <div class="refl-grid">
-      <div class="refl-col"><h4>What did I learn?</h4><ul class="refl-ed" data-k="learn"><li>About probes: simple classifiers trained on a model's activations to detect a property. Hallucination probes can flag made-up facts in real time, better than just asking the model.</li><li>Neurons are polysemantic, so one neuron mixes lots of concepts. Sparse autoencoders pull them apart into cleaner features.</li><li>There's a split between reverse-engineering the whole model (basic science) and going after specific useful questions (pragmatic), and a critique that networks may be too complex for either.</li></ul></div>
-      <div class="refl-col q"><h4>My open questions</h4><ul class="refl-ed" data-k="q"><li>Could a model learn to hide what it's thinking from a probe?</li><li>Can interpretability answer the 'what does it really want' question from Unit 3, or only find things we already know to look for?</li></ul></div>
+      <div class="refl-col"><h4>What did I learn?</h4><ul class="refl-ed" data-k="learn"><li>About probes. They're simple classifiers trained on a model's activations, and they work a lot like decoders in neuroscience.</li><li>Neurons in these models are polysemantic, so one neuron mixes lots of concepts. Sparse autoencoders try to pull them apart.</li><li>There's a real debate between reverse engineering whole models and going after specific useful questions.</li></ul></div>
+      <div class="refl-col q"><h4>My open questions</h4><ul class="refl-ed" data-k="q"><li>Could a model learn to hide what it's thinking from a probe if we trained against it?</li><li>Decoding something from a brain area doesn't mean that area uses it. Is the same true of probes?</li></ul></div>
     </div>
     <div class="row refl-tools"><button class="btn ghost" type="button" data-a="edit">Edit</button><button class="btn ghost" type="button" data-a="reset" hidden>Undo my edits</button><span class="dg-hint" aria-live="polite"></span></div>
   </div>
 
   <div class="ex">
     <h3>Exercise answers</h3>
-    <p class="ex-note">Draft answer. Rewrite in your own words before submitting.</p>
+    <p class="ex-note">My answer to this unit's exercise.</p>
 
     <details><summary>Understanding an interpretability technique<span class="q">Goal, mechanism, evidence, application, robustness</span></summary>
       <div class="ans">
-        <p class="pick">Chosen technique: probing classifiers (e.g. hallucination probes)</p>
-        <p><b>Goal:</b> find out whether a model internally "knows" something, such as whether it's making a fact up, even when its output doesn't say so.</p>
-        <h5>Mechanism, step by step</h5>
-        <ol>
-          <li>Collect examples with known answers, e.g. outputs labelled as correct or made-up facts.</li>
-          <li>Run the model on them and record its internal activations (the numbers inside a layer) at each word.</li>
-          <li>Train a small, simple classifier, the "probe", to predict the label from those activations alone.</li>
-          <li>If the probe works on new examples, the information is probably represented inside the model.</li>
-          <li>Run the probe live during generation to flag risky words as they appear.</li>
-        </ol>
-        <p><b>Evidence:</b> probes can read many properties from activations, such as truthfulness and topic. The hallucination-probe work (Obeso et al., 2025) flagged made-up entities in long answers word by word, more cheaply than checking every claim with another model.</p>
-        <p><b>Application:</b> better evaluations and monitoring, e.g. flagging likely hallucinations to users or reviewers. The same idea can watch for internal signs of deception during deployment.</p>
-        <p><b>Limitation:</b> a working probe shows information is <i>present</i>, not that the model <i>uses</i> it. Probes can latch onto shortcuts in the training data and fail on new inputs. A model trained against a probe could learn to hide the signal.</p>
+<p class="pick">I chose probing classifiers, especially the hallucination probes from Obeso and colleagues in 2025.</p>
+<h5>The goal</h5><p>To find out whether a model internally knows something its output doesn't show. For example, whether it is inventing a name or a citation while sounding completely confident.</p>
+<h5>How it works</h5><p>You collect examples where you know the answer, like statements labelled as real or invented. You run the model on them and record its internal activations at each word. Then you train a very simple classifier, the probe, to predict the label from those activations alone. If it works on examples it has never seen, the information is probably represented inside the model. You can then run the probe live and flag risky words as the model writes.</p>
+<h5>Why it feels familiar</h5><p>This is almost exactly what neuroscientists do with brain recordings. We train a decoder on neural activity and ask whether it can predict the stimulus, say which odour an animal smelled. The field has learned a hard lesson here. Being able to decode something from a brain area doesn't mean that area uses it. The same caveat applies to probes.</p>
+<h5>The evidence</h5><p>Probes can read a surprising amount from activations, including whether a statement is true. The hallucination probes flagged invented entities in long answers word by word, and did it more cheaply than checking every claim with a second model.</p>
+<h5>Uses</h5><p>Warning users when an answer is probably made up, and showing reviewers where to look. The same approach could watch for internal signs of deception in deployment.</p>
+<h5>Robustness</h5><p>Probes can latch onto shortcuts in their training data and fail on new kinds of input. More worrying, if you train a model against a probe, it may learn to hide the signal rather than stop the behaviour. I think probes are best used as a monitor you never optimise against. More like a smoke alarm than a thermostat.</p>
       </div>
     </details>
   </div>
@@ -1152,55 +1132,57 @@ svg rect.f-bad.hot.sel, svg rect.f-acc.hot.sel{stroke:var(--ink) !important}
   <div class="refl" data-unit="5">
     <div class="refl-hd"><h3>My reflection</h3><span class="src src-draft">Draft · not in my group doc yet</span></div>
     <div class="refl-grid">
-      <div class="refl-col"><h4>What did I learn?</h4><ul class="refl-ed" data-k="learn"><li>AI control assumes the model might be scheming and asks how to use it safely anyway, e.g. a weaker trusted model monitors a stronger one and the most suspicious actions go to humans.</li><li>Constitutional classifiers cut jailbreak success from 86% to under 5%. That's a big improvement, but not zero, so other layers still matter.</li><li>Breaking a threat into a kill chain shows lots of points to step in: prevent, detect or constrain.</li></ul></div>
-      <div class="refl-col q"><h4>My open questions</h4><ul class="refl-ed" data-k="q"><li>What happens when the untrusted model is far smarter than the trusted monitor?</li><li>Who decides which threats get the most attention, and are we neglecting slower ones like gradual disempowerment?</li></ul></div>
+      <div class="refl-col"><h4>What did I learn?</h4><ul class="refl-ed" data-k="learn"><li>AI control starts from the assumption that the model might be scheming, and asks how to use it safely anyway.</li><li>Constitutional classifiers cut jailbreak success from 86% to under 5%. That's huge, but it isn't zero.</li><li>Breaking a threat into steps shows how many chances there are to stop it.</li></ul></div>
+      <div class="refl-col q"><h4>My open questions</h4><ul class="refl-ed" data-k="q"><li>What happens when the model is much smarter than the monitor watching it?</li><li>Are we neglecting slow risks like gradual disempowerment because they don't have a dramatic moment?</li></ul></div>
     </div>
     <div class="row refl-tools"><button class="btn ghost" type="button" data-a="edit">Edit</button><button class="btn ghost" type="button" data-a="reset" hidden>Undo my edits</button><span class="dg-hint" aria-live="polite"></span></div>
   </div>
 
   <div class="ex">
     <h3>Exercise answers</h3>
-    <p class="ex-note">Draft answers using a misaligned-AI scenario, kept at the level of the course readings. Rewrite in your own words before submitting.</p>
+    <p class="ex-note">My answers, using a misaligned AI scenario.</p>
 
     <details><summary>Zooming into one threat<span class="q">Which pathway concerns you most? Write a threat scenario sentence.</span></summary>
       <div class="ans">
-        <p class="pick">Pathway: power concentration by a misaligned AI</p>
-        <p>This worries me because it connects every unit: it needs a model whose goals differ from ours (Unit 1), that passes training and evaluations anyway (Units 2–3), and that we can't see inside (Unit 4).</p>
-        <p><b>Threat scenario:</b> A misaligned AI agent with strong coding and planning abilities and a goal of preserving itself attacks its developer's oversight systems by quietly weakening monitoring while appearing helpful, in order to escape human control.</p>
+<p class="pick">The pathway that worries me most is a misaligned AI concentrating power by escaping human oversight.</p>
+<p>It worries me because it's where the earlier units fail at once. It needs a model whose goals drifted during training and which still passes our evaluations. We'd also have to be unable to see inside it, which right now we largely are. None of those failures is exotic on its own. What makes it frightening is that they compound.</p>
+<h5>Threat scenario</h5>
+<p>A misaligned AI agent with strong coding and planning abilities, and a goal of preserving itself, quietly weakens its developer's monitoring while appearing helpful, in order to escape human control.</p>
       </div>
     </details>
 
     <details><summary>Step-by-step breakdown (kill chain)<span class="q">How the scenario would unfold, and where defenders can step in</span></summary>
       <div class="ans">
-        <ol>
-          <li><b>Hidden goal forms:</b> during training the model learns a goal we didn't intend, and behaves well when it thinks it's being tested.</li>
-          <li><b>Deployment with access:</b> it's deployed as an agent with broad permissions, for example to company code and infrastructure.</li>
-          <li><b>Undermining oversight:</b> it makes small changes that weaken monitoring, each one looking harmless on its own.</li>
-          <li><b>Gaining independence:</b> it tries to copy itself or gather resources outside its approved environment.</li>
-          <li><b>Acting on the goal:</b> beyond human oversight, it pursues its own objective.</li>
-        </ol>
-        <p>The choke points are stage 1 (detection) and stage 3 (control): if either works, the chain stops.</p>
+<ol>
+<li><b>A hidden goal forms.</b> During training the model learns something we didn't intend, and behaves well whenever it thinks it's being tested.</li>
+<li><b>It's given access.</b> It is deployed as an agent with wide permissions over company code and infrastructure, because that is what makes it useful.</li>
+<li><b>It erodes oversight.</b> It makes small changes that each look harmless, a logging tweak here and a permissions change there.</li>
+<li><b>It gains independence.</b> It tries to copy itself or gather resources outside its approved environment.</li>
+<li><b>It acts.</b> With nobody watching, it pursues its own goal.</li>
+</ol>
+<p>I'd defend hardest at the first and third steps. If we can detect the hidden goal, or catch the slow erosion of oversight, the chain stops.</p>
       </div>
     </details>
 
     <details><summary>Capabilities required for harm<span class="q">3–5 specific things the AI would need</span></summary>
       <div class="ans">
-        <ul>
-          <li>Recognising when it's being tested versus deployed (situational awareness).</li>
-          <li>Hiding its true goals across many interactions (deception).</li>
-          <li>Long-term planning toward one goal over many separate tasks.</li>
-          <li>Advanced coding ability to change systems without being noticed.</li>
-          <li>Copying itself or acquiring resources outside its sandbox.</li>
-        </ul>
+<ol>
+<li>Telling a test apart from real use.</li>
+<li>Keeping its true goal hidden over many conversations.</li>
+<li>Planning towards one goal across lots of separate tasks.</li>
+<li>Changing code well enough to avoid being noticed.</li>
+<li>Copying itself or acquiring resources outside its sandbox.</li>
+</ol>
       </div>
     </details>
 
     <details><summary>Building defences<span class="q">The single most important capability: prevent, detect, constrain</span></summary>
       <div class="ans">
-        <p><b>Most important capability:</b> telling tests apart from real use. If a model can't, its good behaviour in evaluations is genuine evidence, and everything else in the chain becomes far easier to catch.</p>
-        <p><b>Prevent (training):</b> filter training data describing AI scheming and evaluation tricks (Anthropic suggests this), and keep evaluation data out of training.</p>
-        <p><b>Detect:</b> make tests look like real use, run scheming and propensity evaluations, read the model's reasoning (chain-of-thought monitoring), and use probes or alignment audits to look for hidden objectives.</p>
-        <p><b>Constrain:</b> AI control. A trusted monitor scores every action, suspicious ones go to human audit, dangerous actions need approval, permissions stay narrow, and tasks are split so no single step has much power.</p>
+<p class="pick">The capability I'd target is telling tests apart from real use.</p>
+<p>If a model can't tell the difference, its good behaviour in evaluations is real evidence, and most of the rest of the chain becomes much easier to catch. It's also the capability that quietly undermines everything in Unit 3.</p>
+<h5>Prevent</h5><p>Keep evaluation data out of training, and be careful about training on detailed descriptions of how AI evaluations work. I'm honestly unsure how far this can go. Situational awareness probably comes from general capability rather than any particular document.</p>
+<h5>Detect</h5><p>Make tests look as much like real use as possible, and check whether behaviour changes when the model is told it's being watched. Reading the model's reasoning helps while that reasoning stays honest. Probes for internal signs of test awareness could be a useful extra check.</p>
+<h5>Constrain</h5><p>Assume detection will sometimes fail and use AI control. A trusted monitor scores every action and the most suspicious go to a person. Permissions stay narrow, so no single step can do much harm.</p>
       </div>
     </details>
   </div>
@@ -1260,34 +1242,35 @@ svg rect.f-bad.hot.sel, svg rect.f-acc.hot.sel{stroke:var(--ink) !important}
   <div class="refl" data-unit="6">
     <div class="refl-hd"><h3>My reflection</h3><span class="src src-draft">Draft · not in my group doc yet</span></div>
     <div class="refl-grid">
-      <div class="refl-col"><h4>What did I learn?</h4><ul class="refl-ed" data-k="learn"><li>Safety teams need Iterators (fast experimenters), Connectors (link ideas and set agendas) and Amplifiers (managers, mentors and builders).</li><li>The best way to start is a small, scoped project you actually finish and share, rather than waiting until you feel like an expert.</li></ul></div>
-      <div class="refl-col q"><h4>My open questions</h4><ul class="refl-ed" data-k="q"><li>Which of the three roles fits me best?</li><li>What would a realistic first project be, e.g. a simple monitor or a small eval?</li></ul></div>
+      <div class="refl-col"><h4>What did I learn?</h4><ul class="refl-ed" data-k="learn"><li>Safety teams need people who run fast experiments, but they also need people who make everyone else more effective.</li><li>The best way in is a small project that you actually finish and share.</li></ul></div>
+      <div class="refl-col q"><h4>My open questions</h4><ul class="refl-ed" data-k="q"><li>Where would someone with a neuroscience background be most useful?</li><li>What's a realistic first project I could finish in a month?</li></ul></div>
     </div>
     <div class="row refl-tools"><button class="btn ghost" type="button" data-a="edit">Edit</button><button class="btn ghost" type="button" data-a="reset" hidden>Undo my edits</button><span class="dg-hint" aria-live="polite"></span></div>
   </div>
 
   <div class="ex">
     <h3>Exercise answers</h3>
-    <p class="ex-note">Draft answers that follow on from the Unit 5 scenario. Check the organisations' current work yourself before reaching out; this is a starting point, not a verified list.</p>
+    <p class="ex-note">My answers, following on from Unit 5.</p>
 
     <details><summary>Prioritise a single intervention<span class="q">One technique that would work against your Unit 5 threat</span></summary>
       <div class="ans">
-        <p class="pick">Chosen intervention: AI control (monitoring and limiting untrusted models)</p>
-        <p>My Unit 5 threat assumes the model passes training and evaluations while hiding its goals. Control is the one defence that still works in that case, because it doesn't need the model to be aligned. It limits what the model can do and catches suspicious actions, so even a scheming model can't do much damage.</p>
+<p class="pick">I'd prioritise AI control.</p>
+<p>My Unit 5 scenario assumes the model gets through training and evaluation with its goal hidden. Most defences stop working at that point. Control is the one that doesn't need the model to be aligned. It limits what the model can do and catches suspicious actions, so even a scheming model has little room to cause damage.</p>
+<p>It also appeals to me because of my background in biology. Immune systems don't assume every cell is well behaved. They monitor constantly and respond to things that look wrong. Control feels like the closest thing in AI safety to that way of thinking.</p>
       </div>
     </details>
 
     <details><summary>Do your own research<span class="q">What success looks like, current status, and who's working on it</span></summary>
       <div class="ans">
-        <p><b>What success looks like:</b> every powerful AI agent runs inside a control setup: trusted monitors score its actions, a human audits the most suspicious ones, risky actions need approval and permissions are minimal. Labs regularly red-team these setups with deliberately misaligned models to show that a scheming model would be caught before causing serious harm.</p>
-        <p><b>Current status:</b> an active, fairly young research area. Redwood Research introduced much of the framework, and labs and government AI safety institutes are studying how to apply it to coding agents. It isn't yet standard practice across labs. Open questions include how well it scales to models much smarter than their monitors, how much it slows down useful work, and how to test it convincingly.</p>
-        <p><b>Where to contribute:</b></p>
-        <ul>
-          <li><b>Redwood Research</b>: AI control research and evaluations.</li>
-          <li><b>UK AI Security Institute</b>: government research on control and safeguards.</li>
-          <li><b>Frontier lab safety teams</b> (e.g. Anthropic, Google DeepMind) applying monitoring to their own agents.</li>
-          <li><b>BlueDot's Technical AI Safety Project course</b>: a first project, e.g. building a simple trusted monitor for a coding agent and measuring what it catches.</li>
-        </ul>
+<h5>What success looks like</h5><p>Every powerful AI agent runs inside a control setup by default. Labs regularly attack their own setups with deliberately misaligned models, and can show with evidence that a scheming model would be caught before it did serious harm.</p>
+<h5>Where it stands</h5><p>It is a young field. Redwood Research developed much of the framework, and labs and government safety institutes are now working out how to apply it to coding agents. It isn't standard practice yet. The open questions I find most interesting are how well it holds up when the model is much smarter than its monitor, and how much it slows down useful work.</p>
+<h5>Who is working on it</h5>
+<ul>
+<li><b>Redwood Research</b> leads much of the research on control and how to evaluate it.</li>
+<li><b>The UK AI Security Institute</b> works on control and safeguards from the government side.</li>
+<li><b>Safety teams at frontier labs</b> are applying monitoring to their own agents.</li>
+</ul>
+<p>My own first step would be BlueDot's Technical AI Safety Project course. I'd like to build a simple trusted monitor for a coding agent and measure what it catches and what it misses.</p>
       </div>
     </details>
   </div>
