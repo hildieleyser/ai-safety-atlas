@@ -1,0 +1,583 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Model Architectures</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Same visual system as the Atlas: one reading column, numbered stages that follow a token through the model. */
+:root{
+  --bg:#EDF0F2; --paper:#F8FAFB; --ink:#16212B; --muted:#55626E; --rule:#C9D1D8;
+  --accent:#0E6B66; --accent-soft:#D3E7E5; --warn:#A8601A; --warn-soft:#F2E2CF; --bad:#A33A3A; --bad-soft:#F1D9D7;
+  --u1:#3D5A80; --u2:#0E6B66; --u3:#8A5A12; --u4:#6A4C93; --u5:#A33A3A; --u6:#2F6B3A;
+  --display:"Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --body:"Source Serif 4", Georgia, "Times New Roman", serif;
+  --mono:"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#11171C; --paper:#182128; --ink:#E4E9ED; --muted:#9AA7B2; --rule:#2E3A44;
+  --accent:#4FB3AB; --accent-soft:#16332F; --warn:#D9954F; --warn-soft:#3A2A19; --bad:#E07A72; --bad-soft:#3A1F1E;
+  --u1:#86A6CF; --u2:#4FB3AB; --u3:#D2A55A; --u4:#AE93D6; --u5:#E07A72; --u6:#78B985; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#11171C; --paper:#182128; --ink:#E4E9ED; --muted:#9AA7B2; --rule:#2E3A44;
+  --accent:#4FB3AB; --accent-soft:#16332F; --warn:#D9954F; --warn-soft:#3A2A19; --bad:#E07A72; --bad-soft:#3A1F1E;
+  --u1:#86A6CF; --u2:#4FB3AB; --u3:#D2A55A; --u4:#AE93D6; --u5:#E07A72; --u6:#78B985; color-scheme:dark }
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto} *{transition:none !important} }
+body{margin:0; background:var(--bg); color:var(--ink); font-family:var(--body); font-size:17px; line-height:1.6;
+  padding-left:max(16px, env(safe-area-inset-left, 0px)); padding-right:max(16px, env(safe-area-inset-right, 0px)); padding-bottom:64px}
+a{color:var(--accent); text-underline-offset:3px}
+h1,h2,h3,h4,h5{font-family:var(--display); line-height:1.15; text-wrap:balance; margin:0}
+p{margin:0}
+button, input{font:inherit; color:inherit}
+:focus-visible{outline:2px solid var(--accent); outline-offset:3px}
+
+.tabsnav{max-width:1080px; margin:0 auto; display:flex; gap:4px; padding-top:20px; border-bottom:1px solid var(--rule); overflow-x:auto}
+.tabsnav a{font-family:var(--display); font-weight:700; font-size:15px; text-decoration:none; color:var(--muted); padding:10px 14px; border-radius:8px 8px 0 0; border:1px solid transparent; border-bottom:0; white-space:nowrap}
+.tabsnav a:hover{color:var(--ink)}
+.tabsnav a[aria-current="page"]{color:var(--ink); background:var(--paper); border-color:var(--rule); margin-bottom:-1px}
+
+.page{max-width:1080px; margin:0 auto}
+.mast{padding-block:44px 28px}
+.eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted)}
+.mast h1{font-size:clamp(38px, 6.5vw, 70px); font-weight:800; letter-spacing:-.02em; margin-top:10px}
+.lede{max-width:64ch; margin-top:16px; font-size:19px; color:var(--muted)}
+
+/* Pipeline nav */
+.pipe{position:sticky; top:0; z-index:5; background:var(--bg); padding-block:10px; border-bottom:1px solid var(--rule); margin-bottom:24px}
+.pipe ol{list-style:none; margin:0; padding:0; display:flex; gap:6px; overflow-x:auto; scrollbar-width:thin}
+.pipe a{display:flex; align-items:center; gap:6px; white-space:nowrap; text-decoration:none; color:var(--muted); font-family:var(--mono); font-size:12.5px; padding:7px 10px; border-radius:99px; border:1px solid var(--rule); background:var(--paper)}
+.pipe a b{font-family:var(--display); color:var(--ink); font-weight:700; font-size:13.5px}
+.pipe a.on{background:var(--ink); color:var(--bg); border-color:var(--ink)}
+.pipe a.on b{color:var(--bg)}
+.pipe li:not(:last-child)::after{content:"→"; color:var(--rule); margin-left:6px}
+.pipe li{display:flex; align-items:center}
+
+section.st{padding-block:12px 52px; border-bottom:1px solid var(--rule); margin-bottom:40px; scroll-margin-top:72px}
+section.st:last-of-type{border-bottom:0}
+.st-head{display:grid; gap:8px; padding-left:16px; border-left:6px solid var(--sc)}
+.st-head .eyebrow{color:var(--sc)}
+.st-head h2{font-size:clamp(28px, 4.4vw, 42px); font-weight:800; letter-spacing:-.015em}
+.st-head p{max-width:66ch; color:var(--muted); font-size:18px}
+.prose{display:grid; gap:12px; max-width:68ch; margin-top:16px}
+.lab{margin-top:20px; background:var(--paper); border:1px solid var(--rule); border-radius:12px; padding:20px; display:grid; gap:16px; min-width:0}
+.lab-title{font-family:var(--mono); font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted)}
+.note{font-family:var(--mono); font-size:12.5px; color:var(--muted); line-height:1.5}
+.key{border-left:4px solid var(--sc); padding:10px 14px; background:var(--bg); border-radius:0 8px 8px 0; font-size:16px; max-width:70ch}
+.key b{font-family:var(--display)}
+.row{display:flex; flex-wrap:wrap; gap:8px; align-items:center}
+.btn{font-family:var(--display); font-weight:700; font-size:14px; padding:8px 14px; border-radius:8px; border:1px solid var(--rule); background:var(--bg); cursor:pointer; min-height:40px}
+.btn:hover{border-color:var(--ink)}
+.btn.pri{background:var(--sc, var(--accent)); border-color:var(--sc, var(--accent)); color:var(--bg)}
+.btn[aria-pressed="true"]{background:var(--ink); color:var(--bg); border-color:var(--ink)}
+.chip{font-family:var(--mono); font-size:12.5px; padding:6px 10px; border-radius:99px; border:1px solid var(--rule); background:var(--bg); cursor:pointer; min-height:34px}
+.chip[aria-pressed="true"]{background:var(--ink); color:var(--bg); border-color:var(--ink)}
+input[type=text]{width:100%; font-size:17px; padding:10px 14px; border-radius:8px; border:1px solid var(--rule); background:var(--bg); min-height:44px}
+input[type=range]{width:100%; accent-color:var(--sc, var(--accent)); min-height:30px}
+.ctl{display:grid; gap:4px}
+.ctl label{font-family:var(--mono); font-size:12.5px; color:var(--muted); display:flex; justify-content:space-between; gap:8px}
+.ctl label output{color:var(--ink); font-weight:500}
+svg{display:block; width:100%; height:auto}
+svg text{font-family:var(--mono); fill:var(--ink); font-size:13px}
+.two{display:grid; grid-template-columns:minmax(0,1.2fr) minmax(0,1fr); gap:20px; align-items:start}
+@media (max-width:760px){ .two{grid-template-columns:minmax(0,1fr)} }
+
+/* 1 tokens */
+.toks{display:flex; flex-wrap:wrap; gap:4px}
+.tok{display:grid; gap:2px; padding:6px 8px; border-radius:6px; font-family:var(--mono); font-size:15px; white-space:pre; text-align:center}
+.tok small{font-size:10.5px; color:var(--muted)}
+.stats{display:flex; flex-wrap:wrap; gap:20px}
+.stat .v{font-family:var(--display); font-weight:800; font-size:28px; line-height:1}
+.stat .s{font-family:var(--mono); font-size:12px; color:var(--muted)}
+
+/* 2 embeddings */
+.emb svg .w{cursor:pointer}
+.emb svg .w circle{transition:r .2s}
+.emb svg .w:hover circle{r:7}
+
+/* 3 attention */
+.sent{display:flex; flex-wrap:wrap; gap:6px}
+.sent button{font-family:var(--mono); font-size:15px; padding:8px 10px; border-radius:6px; border:1px solid var(--rule); cursor:pointer; min-height:40px; position:relative}
+.sent button.q{outline:3px solid var(--ink); outline-offset:1px}
+.sent button.fut{opacity:.35}
+.sent button .pct{position:absolute; left:50%; transform:translateX(-50%); top:-18px; font-size:10.5px; color:var(--muted)}
+.mat{display:grid; gap:2px; font-family:var(--mono); font-size:10px}
+.mat span{aspect-ratio:1; border-radius:2px}
+
+/* 4 qkv */
+.kv{display:grid; gap:10px}
+.kvrow{display:grid; grid-template-columns:76px minmax(0,1fr) 54px 110px; gap:10px; align-items:center}
+.kvrow .w{font-family:var(--mono); font-size:14px}
+.kvrow .bar{height:16px; border-radius:4px; background:var(--rule); position:relative; overflow:hidden}
+.kvrow .bar i{position:absolute; inset:0 auto 0 0; background:var(--sc)}
+.kvrow .p{font-family:var(--mono); font-size:13px; text-align:right}
+.sw{width:28px; height:28px; border-radius:6px; border:1px solid var(--rule); display:inline-block; vertical-align:middle}
+.mix{display:flex; align-items:center; gap:12px; font-family:var(--mono); font-size:13px}
+.mix .sw{width:56px; height:56px; border-radius:10px}
+@media (max-width:560px){ .kvrow{grid-template-columns:64px minmax(0,1fr) 46px} .kvrow .ctl{grid-column:1 / -1} }
+
+/* 5 residual stream */
+.rs{display:grid; grid-template-columns:200px minmax(0,1fr); gap:20px; align-items:start}
+@media (max-width:640px){ .rs{grid-template-columns:minmax(0,1fr)} }
+.stack{display:grid; gap:6px}
+.layer{display:flex; justify-content:space-between; align-items:center; padding:8px 12px; border-radius:8px; border:1px solid var(--rule); background:var(--bg); font-family:var(--display); font-weight:700; font-size:14px; cursor:pointer; text-align:left; min-height:40px}
+.layer small{font-family:var(--mono); font-weight:400; font-size:11.5px; color:var(--muted)}
+.layer.done{border-color:var(--sc); background:var(--accent-soft)}
+.layer.cur{outline:3px solid var(--sc); outline-offset:1px}
+.mem{display:grid; gap:8px}
+.mem .item{display:grid; grid-template-columns:auto 1fr; gap:10px; align-items:start; padding:10px 12px; border-radius:8px; background:var(--bg); border:1px solid var(--rule); font-size:15.5px; line-height:1.45}
+.mem .item .src{font-family:var(--mono); font-size:11px; padding:2px 7px; border-radius:99px; background:var(--sc); color:var(--bg); white-space:nowrap; margin-top:2px}
+.mem .item.new{border-color:var(--sc); animation:pop .5s ease}
+@keyframes pop{from{transform:translateY(-6px); opacity:0}to{transform:none; opacity:1}}
+
+/* 6 next token */
+.bars{display:grid; gap:6px}
+.brow{display:grid; grid-template-columns:84px minmax(0,1fr) 60px; gap:10px; align-items:center; font-family:var(--mono); font-size:14px}
+.brow .bar{height:20px; border-radius:4px; background:var(--rule); position:relative; overflow:hidden}
+.brow .bar i{position:absolute; inset:0 auto 0 0; background:var(--sc); transition:width .25s}
+.brow .p{text-align:right; font-size:13px}
+.brow.hit .bar i{background:var(--warn)}
+.gen{font-family:var(--body); font-size:20px; line-height:1.6; padding:14px 16px; background:var(--bg); border-radius:8px; min-height:60px}
+.gen span.n{background:var(--accent-soft); border-radius:4px; padding:0 3px; animation:pop .4s ease}
+.trace{font-family:var(--mono); font-size:12.5px; color:var(--muted); display:grid; gap:4px; max-height:180px; overflow:auto}
+
+/* 7 training */
+.loss svg .dot{transition:cx .2s, cy .2s}
+
+/* 8 safety map */
+.map svg .hot{cursor:pointer}
+.map svg .hot:hover rect, .map svg .hot.sel rect{stroke-width:3}
+.panel{padding:12px 16px; border-radius:8px; background:var(--bg); border-left:4px solid var(--sc); display:grid; gap:6px; font-size:15.5px; min-height:56px}
+.panel h5{font-size:16px}
+footer{max-width:1080px; margin:0 auto; padding-top:24px; border-top:1px solid var(--rule); font-family:var(--mono); font-size:12.5px; color:var(--muted)}
+/* Architecture page extras */
+.facts{display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:10px; margin-top:16px}
+.fact{background:var(--paper); border:1px solid var(--rule); border-radius:10px; padding:12px 14px; display:grid; gap:4px; align-content:start}
+.fact h5{font-family:var(--mono); font-weight:500; font-size:11.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--sc)}
+.fact p{font-size:15px; line-height:1.45}
+.timeline svg .ev{cursor:pointer}
+.timeline svg .ev:hover circle, .timeline svg .ev:focus circle{r:9}
+.pix{display:grid; gap:2px; width:100%; max-width:260px}
+.pix span{aspect-ratio:1; border-radius:2px; background:var(--rule)}
+.pix span.f{outline:2px solid var(--warn); outline-offset:-1px}
+.cnn{display:flex; flex-wrap:wrap; gap:20px; align-items:center}
+.cnn #cin{width:220px} .cnn #cout{width:170px}
+.cnn .lbl{font-family:var(--mono); font-size:12px; color:var(--muted); margin-bottom:6px}
+.kern{display:grid; grid-template-columns:repeat(3, 34px); gap:2px; font-family:var(--mono); font-size:12px}
+.kern span{height:34px; display:grid; place-items:center; border-radius:3px; background:var(--bg); border:1px solid var(--rule)}
+.rnn{display:flex; flex-wrap:wrap; gap:6px; align-items:flex-end}
+.rnn .cell{display:grid; gap:4px; justify-items:center; font-family:var(--mono); font-size:13px}
+.rnn .cell .h{width:52px; height:52px; border-radius:8px; border:1px solid var(--rule); background:var(--bg); display:grid; place-items:center; font-size:11px; color:var(--muted)}
+.rnn .cell.on .h{border-color:var(--sc); background:var(--accent-soft); color:var(--ink)}
+.rnn .arrow{color:var(--muted); padding-bottom:30px}
+.membar{display:grid; grid-template-columns:90px minmax(0,1fr) 44px; gap:8px; align-items:center; font-family:var(--mono); font-size:13px}
+.membar .bar{height:14px; background:var(--rule); border-radius:4px; overflow:hidden; position:relative}
+.membar .bar i{position:absolute; inset:0 auto 0 0; background:var(--sc); transition:width .3s}
+.masks{display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:16px}
+.mask{display:grid; gap:8px}
+.mask .grid{display:grid; gap:2px; max-width:360px}
+.mask .grid span{aspect-ratio:1; border-radius:2px}
+.experts{display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:8px}
+.expert{border:1px solid var(--rule); border-radius:8px; padding:10px; display:grid; gap:4px; background:var(--bg); font-family:var(--mono); font-size:12px; transition:background .2s, border-color .2s}
+.expert b{font-family:var(--display); font-size:14px}
+.expert.on{background:var(--accent-soft); border-color:var(--sc)}
+.expert .bar{height:6px; background:var(--rule); border-radius:3px; overflow:hidden}
+.expert .bar i{display:block; height:100%; background:var(--sc)}
+@media (max-width:560px){ .experts{grid-template-columns:repeat(2, minmax(0,1fr))} }
+.cmp{width:100%; border-collapse:collapse; font-size:15px; min-width:640px}
+.cmp th, .cmp td{text-align:left; padding:10px 12px; border-bottom:1px solid var(--rule); vertical-align:top}
+.cmp th{font-family:var(--mono); font-weight:500; font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted)}
+.cmp td:first-child{font-family:var(--display); font-weight:700}
+.tablewrap{overflow-x:auto; margin-top:16px; background:var(--paper); border:1px solid var(--rule); border-radius:12px}
+canvas{display:block; width:100%; max-width:260px; image-rendering:pixelated; border-radius:8px; border:1px solid var(--rule); aspect-ratio:1}
+</style>
+</head>
+<body>
+
+<nav class="tabsnav" aria-label="Pages">
+  <a href="index.html">Course atlas</a>
+  <a href="how-models-work.html">How transformers work</a>
+  <a href="architectures.html" aria-current="page">Architectures</a>
+</nav>
+
+<div class="page">
+<header class="mast">
+  <div class="eyebrow">Interactive explainer · neural network architectures</div>
+  <h1>Model architectures</h1>
+  <p class="lede">An architecture is the shape of a neural network: how information is allowed to flow through it. Different shapes suit different data. Each section has a small simulation you can play with. All numbers are toy examples.</p>
+</header>
+
+<nav class="pipe" aria-label="Architectures">
+  <ol>
+    <li><a href="#t"><b>Timeline</b></a></li>
+    <li><a href="#mlp"><b>MLP</b></a></li>
+    <li><a href="#cnn"><b>CNN</b></a></li>
+    <li><a href="#rnn"><b>RNN</b></a></li>
+    <li><a href="#tf"><b>Transformer types</b></a></li>
+    <li><a href="#moe"><b>Mixture of experts</b></a></li>
+    <li><a href="#ssm"><b>State-space</b></a></li>
+    <li><a href="#diff"><b>Diffusion</b></a></li>
+    <li><a href="#cmp"><b>Compare</b></a></li>
+  </ol>
+</nav>
+
+<main>
+<section class="st" id="t" style="--sc:var(--u1)">
+  <div class="st-head"><div class="eyebrow">Overview</div><h2>A short family tree</h2><p>Click a milestone to jump to it. Today's chatbots, Claude included, are transformers, so most AI safety research studies transformers.</p></div>
+  <div class="lab timeline"><svg id="tl" viewBox="0 0 860 170" role="img" aria-label="Timeline of architectures from the 1980s to 2023"></svg><p class="note" id="tlinfo" aria-live="polite">Hover or tap a dot.</p></div>
+</section>
+
+<section class="st" id="mlp" style="--sc:var(--u1)">
+  <div class="st-head"><div class="eyebrow">Architecture 1 · 1980s</div><h2>Multilayer perceptron (MLP)</h2><p>The simplest network: layers of neurons where every neuron connects to every neuron in the next layer. Each neuron adds up its weighted inputs and passes the result through a simple non-linear function.</p></div>
+  <div class="lab">
+    <div class="lab-title">Try it: set the inputs and watch the signal flow</div>
+    <div class="two">
+      <svg id="mlpsvg" viewBox="0 0 420 240" role="img" aria-label="A small multilayer perceptron with three inputs, two hidden layers and one output"></svg>
+      <div style="display:grid; gap:12px">
+        <div class="ctl"><label for="m0">has whiskers <output>0.9</output></label><input type="range" id="m0" min="0" max="1" step="0.05" value="0.9"></div>
+        <div class="ctl"><label for="m1">barks <output>0.1</output></label><input type="range" id="m1" min="0" max="1" step="0.05" value="0.1"></div>
+        <div class="ctl"><label for="m2">is small <output>0.8</output></label><input type="range" id="m2" min="0" max="1" step="0.05" value="0.8"></div>
+        <div class="panel" id="mlpout"></div>
+      </div>
+    </div>
+  </div>
+  <div class="facts">
+    <div class="fact"><h5>Good at</h5><p>Fixed-size inputs like table rows. It's also a building block: every transformer layer contains one.</p></div>
+    <div class="fact"><h5>Weak at</h5><p>No sense of order or space. Shuffle the inputs and it can't tell.</p></div>
+    <div class="fact"><h5>Safety angle</h5><p>Transformer MLP layers seem to store facts. Their neurons are polysemantic, which is why SAEs were invented.</p></div>
+  </div>
+</section>
+
+<section class="st" id="cnn" style="--sc:var(--u2)">
+  <div class="st-head"><div class="eyebrow">Architecture 2 · 1998, then 2012</div><h2>Convolutional neural network (CNN)</h2><p>Built for images. Instead of connecting to every pixel, a small filter slides across the image looking for one local pattern, like an edge. Stacked layers combine edges into shapes, and shapes into objects.</p></div>
+  <div class="lab">
+    <div class="lab-title">Try it: slide a 3×3 filter over the image</div>
+    <div class="row" id="kpick" role="group" aria-label="Filter"><button class="chip" type="button" aria-pressed="true" data-k="v">vertical edges</button><button class="chip" type="button" aria-pressed="false" data-k="h">horizontal edges</button><button class="chip" type="button" aria-pressed="false" data-k="b">blur</button></div>
+    <div class="cnn">
+      <div><div class="lbl">input image (8×8)</div><div class="pix" id="cin" style="grid-template-columns:repeat(8,1fr)"></div></div>
+      <div><div class="lbl">filter</div><div class="kern" id="kern"></div></div>
+      <div><div class="lbl">feature map (6×6)</div><div class="pix" id="cout" style="grid-template-columns:repeat(6,1fr); max-width:200px"></div></div>
+    </div>
+    <div class="ctl"><label for="cpos">filter position <output id="cposo">1</output></label><input type="range" id="cpos" min="0" max="35" step="1" value="0"></div>
+    <p class="note" id="cnninfo" aria-live="polite"></p>
+  </div>
+  <div class="facts">
+    <div class="fact"><h5>Good at</h5><p>Images and video. The same filter works anywhere in the picture, so it needs few parameters.</p></div>
+    <div class="fact"><h5>Weak at</h5><p>Long-range relationships, like two things on opposite sides of an image. Vision transformers now often win.</p></div>
+    <div class="fact"><h5>Safety angle</h5><p>Early interpretability work (feature visualisation, "curve detectors") was done on CNNs, and those ideas carried over to transformers.</p></div>
+  </div>
+</section>
+
+<section class="st" id="rnn" style="--sc:var(--u3)">
+  <div class="st-head"><div class="eyebrow">Architecture 3 · LSTM 1997</div><h2>Recurrent neural network (RNN)</h2><p>Reads a sequence one word at a time, carrying a fixed-size "hidden state" from step to step like a running memory. LSTMs added gates to help it remember longer.</p></div>
+  <div class="lab">
+    <div class="lab-title">Try it: feed words in one at a time</div>
+    <div class="rnn" id="rnnrow"></div>
+    <div class="row"><button class="btn pri" type="button" id="rstep">Read next word →</button><button class="btn" type="button" id="rreset">Reset</button><span class="row" role="group" aria-label="Memory type"><button class="chip" type="button" aria-pressed="true" data-g="rnn">plain RNN</button><button class="chip" type="button" aria-pressed="false" data-g="lstm">LSTM</button></span></div>
+    <div class="lab-title" style="margin-top:6px">How much of each word is still in the memory</div>
+    <div id="rmem" style="display:grid; gap:6px"></div>
+    <p class="note" id="rnninfo" aria-live="polite"></p>
+  </div>
+  <div class="facts">
+    <div class="fact"><h5>Good at</h5><p>Streams of data, with constant memory per step: it doesn't grow with length.</p></div>
+    <div class="fact"><h5>Weak at</h5><p>Early words fade (vanishing gradients), and it can't be trained in parallel because each step waits for the last. Transformers fixed both.</p></div>
+    <div class="fact"><h5>Safety angle</h5><p>Mostly historical for language, but the idea of a compressed running state is back in state-space models.</p></div>
+  </div>
+</section>
+
+<section class="st" id="tf" style="--sc:var(--u4)">
+  <div class="st-head"><div class="eyebrow">Architecture 4 · 2017</div><h2>Transformers: three flavours</h2><p>Transformers drop recurrence and let every token attend to others directly, all in parallel. What differs between the flavours is <b>which tokens are allowed to see which</b>, set by the attention mask. (The <a href="how-models-work.html">How transformers work</a> tab walks through one in detail.)</p></div>
+  <div class="lab">
+    <div class="lab-title">Try it: pick a flavour and a word to see what it can attend to</div>
+    <div class="row" id="tfpick" role="group" aria-label="Transformer type"><button class="btn" type="button" aria-pressed="true" data-t="dec">Decoder-only (GPT, Claude)</button><button class="btn" type="button" aria-pressed="false" data-t="enc">Encoder-only (BERT)</button><button class="btn" type="button" aria-pressed="false" data-t="ed">Encoder–decoder (T5, translation)</button></div>
+    <div class="two">
+      <div class="mask"><div class="grid" id="tfgrid"></div><p class="note">Rows = token looking, columns = token being looked at. Click a row.</p></div>
+      <div class="panel" id="tfinfo" aria-live="polite"></div>
+    </div>
+  </div>
+  <div class="facts">
+    <div class="fact"><h5>Decoder-only</h5><p>Each token sees only the past. Trained to predict the next token, so it can generate. Almost all chatbots.</p></div>
+    <div class="fact"><h5>Encoder-only</h5><p>Every token sees the whole text in both directions. Great for understanding and classifying, e.g. the ModernBERT filter in Deep Ignorance, but it can't generate fluently.</p></div>
+    <div class="fact"><h5>Encoder–decoder</h5><p>One half reads the full input, the other writes output while looking back at it (cross-attention). The original 2017 design, built for translation.</p></div>
+  </div>
+</section>
+
+<section class="st" id="moe" style="--sc:var(--u2)">
+  <div class="st-head"><div class="eyebrow">Variant · 2017 onward, popular since ~2023</div><h2>Mixture of experts (MoE)</h2><p>A transformer where each MLP layer is split into many "expert" MLPs. A small router picks the top few experts for each token, so the model can be huge while only a small slice runs per token. Mixtral, for example, uses 2 of 8 experts.</p></div>
+  <div class="lab">
+    <div class="lab-title">Try it: click a token to see which experts the router picks</div>
+    <div class="row" id="moetoks"></div>
+    <div class="experts" id="experts"></div>
+    <p class="note" id="moeinfo" aria-live="polite"></p>
+  </div>
+  <div class="facts">
+    <div class="fact"><h5>Good at</h5><p>More knowledge for the same compute per token. Cheaper to run than a dense model of the same size.</p></div>
+    <div class="fact"><h5>Weak at</h5><p>Needs lots of memory (every expert must be loaded) and careful balancing so the router doesn't overuse a few experts.</p></div>
+    <div class="fact"><h5>Safety angle</h5><p>Experts tend to specialise, often by surface patterns like code or punctuation rather than neat topics. Routing adds another thing to interpret.</p></div>
+  </div>
+</section>
+
+<section class="st" id="ssm" style="--sc:var(--u3)">
+  <div class="st-head"><div class="eyebrow">Architecture 5 · Mamba, 2023</div><h2>State-space models</h2><p>A modern return to the RNN idea: a fixed-size state updated token by token, but designed to train in parallel and remember well. The appeal is cost. Attention compares every token with every other, so cost grows with length squared; a state-space model grows linearly.</p></div>
+  <div class="lab">
+    <div class="lab-title">Try it: drag the length of the text</div>
+    <div class="ctl"><label for="slen">sequence length <output id="sleno">4,000 tokens</output></label><input type="range" id="slen" min="2" max="6" step="0.05" value="3.6"></div>
+    <svg id="ssmsvg" viewBox="0 0 420 200" role="img" aria-label="Compute cost of attention grows quadratically while a state-space model grows linearly"></svg>
+    <div class="stats"><div class="stat"><div class="v" id="satt">0</div><div class="s">attention: token-pair comparisons</div></div><div class="stat"><div class="v" id="sssm">0</div><div class="s">state-space: state updates</div></div><div class="stat"><div class="v" id="sx">0×</div><div class="s">difference</div></div></div>
+  </div>
+  <div class="facts">
+    <div class="fact"><h5>Good at</h5><p>Very long inputs like audio, DNA or whole books, at lower cost.</p></div>
+    <div class="fact"><h5>Weak at</h5><p>Exact recall of something from far back, since everything is squeezed into a fixed state. Hybrids mix in some attention layers to fix this.</p></div>
+    <div class="fact"><h5>Safety angle</h5><p>Most interpretability tools were built for transformers. New architectures may need new tools, an open research area.</p></div>
+  </div>
+</section>
+
+<section class="st" id="diff" style="--sc:var(--u4)">
+  <div class="st-head"><div class="eyebrow">Method · 2020</div><h2>Diffusion models</h2><p>Mostly used for images, video and audio. Training takes real images, adds noise step by step, and teaches a network (often a U-Net or transformer) to predict and remove the noise. To generate, start from pure static and denoise repeatedly.</p></div>
+  <div class="lab">
+    <div class="lab-title">Try it: drag from pure noise to a finished image</div>
+    <div class="two">
+      <canvas id="dcanvas" width="24" height="24" aria-label="A small image being denoised"></canvas>
+      <div style="display:grid; gap:12px">
+        <div class="ctl"><label for="dstep">denoising step <output id="dsto">0 / 50</output></label><input type="range" id="dstep" min="0" max="50" step="1" value="0"></div>
+        <div class="row"><button class="btn pri" type="button" id="dplay">Play</button><button class="btn" type="button" id="dnew">New noise</button></div>
+        <p class="note" id="dinfo"></p>
+      </div>
+    </div>
+  </div>
+  <div class="facts">
+    <div class="fact"><h5>Good at</h5><p>High-quality images, video and audio, steered by a text prompt.</p></div>
+    <div class="fact"><h5>Weak at</h5><p>Slow (many steps), and less natural for text, though diffusion language models are being explored.</p></div>
+    <div class="fact"><h5>Safety angle</h5><p>Deepfakes and non-consensual imagery. Mitigations include training-data filtering, prompt classifiers and watermarking.</p></div>
+  </div>
+</section>
+
+<section class="st" id="cmp" style="--sc:var(--u1)">
+  <div class="st-head"><div class="eyebrow">Summary</div><h2>Side by side</h2></div>
+  <div class="tablewrap"><table class="cmp">
+    <thead><tr><th>Architecture</th><th>Information flow</th><th>Best for</th><th>Main limitation</th><th>Examples</th></tr></thead>
+    <tbody>
+      <tr><td>MLP</td><td>Every neuron to every neuron</td><td>Fixed-size data; part of every transformer</td><td>No order or structure</td><td>Tabular models</td></tr>
+      <tr><td>CNN</td><td>Small sliding filters</td><td>Images</td><td>Long-range relationships</td><td>LeNet, AlexNet, ResNet</td></tr>
+      <tr><td>RNN / LSTM</td><td>Step by step, one running state</td><td>Streams</td><td>Forgets; can't train in parallel</td><td>Pre-2017 translation</td></tr>
+      <tr><td>Transformer</td><td>Attention between tokens</td><td>Language, code, almost everything</td><td>Cost grows with length²</td><td>GPT, Claude, Gemini, BERT</td></tr>
+      <tr><td>Mixture of experts</td><td>Router sends each token to a few experts</td><td>Big models, cheaper to run</td><td>Memory; routing balance</td><td>Mixtral, DeepSeek-V3</td></tr>
+      <tr><td>State-space</td><td>Fixed state, updated per token</td><td>Very long sequences</td><td>Exact long-range recall</td><td>Mamba, hybrids</td></tr>
+      <tr><td>Diffusion</td><td>Repeated denoising</td><td>Images, video, audio</td><td>Many steps</td><td>Stable Diffusion, DALL·E 3</td></tr>
+    </tbody>
+  </table></div>
+</section>
+</main>
+
+<footer>An illustrative explainer for the BlueDot Technical AI Safety course. Simulations use hand-made toy numbers to show each idea, not real model weights.</footer>
+</div>
+
+<script>
+(function(){
+"use strict";
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
+const NS = "http://www.w3.org/2000/svg";
+function s(tag, attrs={}, text){ const n = document.createElementNS(NS, tag); for(const k in attrs) n.setAttribute(k, attrs[k]); if(text != null) n.textContent = text; return n; }
+const mixc = (v, col="var(--sc)") => `color-mix(in srgb, ${col} ${Math.round(Math.max(0, Math.min(1, v))*100)}%, var(--bg))`;
+
+/* pipe highlight */
+const pl = $$(".pipe a");
+if("IntersectionObserver" in window){
+  const io = new IntersectionObserver(es => es.forEach(e => { if(e.isIntersecting) pl.forEach(a => { const on = a.getAttribute("href") === "#"+e.target.id; a.classList.toggle("on", on); if(on) a.scrollIntoView({block:"nearest", inline:"nearest"}); }); }), {rootMargin:"-30% 0px -60% 0px"});
+  $$("section.st").forEach(x => io.observe(x));
+}
+
+/* ---------- timeline ---------- */
+const EV = [[1986,"MLP + backprop","Backpropagation popularised for training multilayer networks.","#mlp"],[1997,"LSTM","Gated RNNs that remember for longer.","#rnn"],[1998,"LeNet (CNN)","Convolutional net reads handwritten digits.","#cnn"],[2012,"AlexNet","A big CNN on GPUs wins ImageNet and starts the deep learning boom.","#cnn"],[2017,"Transformer","“Attention is all you need”: no recurrence, just attention.","#tf"],[2018,"BERT & GPT","Encoder-only and decoder-only transformers.","#tf"],[2020,"Diffusion (DDPM)","Denoising diffusion makes high-quality images.","#diff"],[2021,"Switch Transformer","Mixture of experts at scale.","#moe"],[2023,"Mamba · Mixtral","State-space models and open MoE language models.","#ssm"]];
+const tl = $("#tl"); const X = y => 30 + (y - 1984) * (800/41);
+tl.append(s("path", {d:"M20 90 L840 90", style:"stroke:var(--rule); stroke-width:2"}));
+[1990,2000,2010,2020].forEach(y => tl.append(s("text", {x:X(y), y:160, "text-anchor":"middle", style:"fill:var(--muted); font-size:11px"}, y)));
+EV.forEach(([y, n, d, h], i) => {
+  const g = s("g", {class:"ev", tabindex:"0", role:"link", "aria-label":`${y}: ${n}`});
+  const up = i % 2 === 0; const yy = up ? 54 : 128;
+  g.append(s("path", {d:`M${X(y)} 90 L${X(y)} ${up ? 62 : 118}`, style:"stroke:var(--rule)"}), s("circle", {cx:X(y), cy:90, r:6, style:"fill:var(--u4)"}), s("text", {x:X(y), y:yy, "text-anchor":"middle", style:"font-size:11.5px; font-family:var(--display); font-weight:700"}, n), s("text", {x:X(y), y:yy + (up ? -16 : 16), "text-anchor":"middle", style:"font-size:10.5px; fill:var(--muted)"}, y));
+  const info = () => { $("#tlinfo").textContent = `${y} · ${n}: ${d}`; };
+  g.addEventListener("mouseenter", info); g.addEventListener("focus", info);
+  g.addEventListener("click", () => { info(); location.hash = h; });
+  g.addEventListener("keydown", e => { if(e.key === "Enter"){ location.hash = h; } });
+  tl.append(g);
+});
+
+/* ---------- MLP ---------- */
+const msvg = $("#mlpsvg");
+const LAY = [[100,[50,120,190]],[195,[30,90,150,210]],[290,[60,120,180]],[370,[120]]];
+const W1 = [[2.2,-1.5,1.4,-.5],[-2,2.4,-.6,1.2],[1.2,-.2,1.6,-1]], W2 = [[1.8,-.6,.4],[-.8,2,.2],[1.4,-.2,1.2],[-.6,1.4,-.4]], W3 = [[2.4],[-2.2],[1.2]];
+const B1 = [-.6,-.6,-.8,0], B2 = [-.8,-.4,-.6], B3 = [-1.2];
+const sig = x => 1/(1+Math.exp(-x));
+function fwd(x){ const h1 = B1.map((b,j) => sig(b + x.reduce((a,v,i) => a + v*W1[i][j], 0))); const h2 = B2.map((b,j) => sig(b + h1.reduce((a,v,i) => a + v*W2[i][j], 0))); const o = sig(B3[0] + h2.reduce((a,v,i) => a + v*W3[i][0], 0)); return [x, h1, h2, [o]]; }
+const edges = s("g"), nodesG = s("g"); msvg.append(edges, nodesG);
+const labels = [["whiskers","barks","small"],null,null,["cat?"]];
+function renderMLP(){
+  const x = [0,1,2].map(i => +$("#m"+i).value);
+  $$(".ctl output", $("#mlp")).forEach((o, i) => o.textContent = x[i].toFixed(2));
+  const acts = fwd(x); edges.innerHTML = ""; nodesG.innerHTML = "";
+  const Ws = [W1, W2, W3];
+  for(let l = 0; l < 3; l++){ const [xa, ya] = LAY[l], [xb, yb] = LAY[l+1];
+    ya.forEach((y1, i) => yb.forEach((y2, j) => { const w = Ws[l][i][j]; const sig2 = acts[l][i] * Math.abs(w);
+      edges.append(s("path", {d:`M${xa} ${y1} L${xb} ${y2}`, style:`stroke:${w > 0 ? "var(--accent)" : "var(--bad)"}; stroke-width:${(.4 + sig2*1.6).toFixed(2)}; opacity:${(.15 + Math.min(sig2/2.5, 1)*.85).toFixed(2)}`})); })); }
+  LAY.forEach(([xx, ys], l) => ys.forEach((y, i) => { const a = acts[l][i];
+    nodesG.append(s("circle", {cx:xx, cy:y, r:15, style:`fill:${mixc(a, "var(--accent)")}; stroke:var(--ink); stroke-width:1.2`}));
+    nodesG.append(s("text", {x:xx, y:y+4, "text-anchor":"middle", style:"font-size:10.5px"}, a.toFixed(1)));
+    if(labels[l]) nodesG.append(s("text", {x:l ? xx + 20 : xx - 20, y:y+4, "text-anchor":l ? "start" : "end", style:"font-size:11px; fill:var(--muted)"}, labels[l][i]));
+  }));
+  nodesG.append(s("text", {x:230, y:236, "text-anchor":"middle", style:"font-size:10.5px; fill:var(--muted)"}, "green = positive weight · red = negative"));
+  const o = acts[3][0];
+  $("#mlpout").innerHTML = `<h5>Output: ${Math.round(o*100)}% “cat”</h5><p>Each neuron multiplies its inputs by weights (thicker lines = bigger contribution), adds them up and squashes the result to 0–1. Training is just finding good weights.</p>`;
+}
+[0,1,2].forEach(i => $("#m"+i).addEventListener("input", renderMLP)); renderMLP();
+
+/* ---------- CNN ---------- */
+const IMG = ["00000000","00111100","00100100","00100100","00111100","00000100","00000100","00000000"].map(r => r.split("").map(Number));
+const K = {v:[[-1,0,1],[-1,0,1],[-1,0,1]], h:[[-1,-1,-1],[0,0,0],[1,1,1]], b:[[1,1,1],[1,1,1],[1,1,1]].map(r => r.map(v => +(v/9).toFixed(2)))};
+let KK = "v";
+const cin = $("#cin"), cout = $("#cout"), kern = $("#kern");
+function conv(r, c){ let a = 0; for(let i = 0; i < 3; i++) for(let j = 0; j < 3; j++) a += IMG[r+i][c+j] * K[KK][i][j]; return a; }
+function renderCNN(){
+  const pos = +$("#cpos").value; const pr = Math.floor(pos/6), pc = pos % 6;
+  $("#cposo").textContent = `${pos+1} of 36`;
+  cin.innerHTML = ""; IMG.forEach((row, r) => row.forEach((v, c) => { const d = document.createElement("span"); d.style.background = v ? "var(--ink)" : "var(--bg)"; if(r >= pr && r < pr+3 && c >= pc && c < pc+3) d.classList.add("f"); cin.append(d); }));
+  kern.innerHTML = K[KK].flat().map(v => `<span style="background:${v > 0 ? mixc(Math.min(v,1)*.6, "var(--accent)") : v < 0 ? mixc(.5, "var(--bad)") : "var(--bg)"}">${v}</span>`).join("");
+  const mx = Math.max(...Array.from({length:36}, (_, k) => Math.abs(conv(Math.floor(k/6), k%6))), 1e-9);
+  cout.innerHTML = "";
+  for(let k = 0; k < 36; k++){ const r = Math.floor(k/6), c = k % 6; const d = document.createElement("span");
+    if(k <= pos){ const v = conv(r, c); d.style.background = v >= 0 ? mixc(v/mx, "var(--accent)") : mixc(-v/mx, "var(--bad)"); } else d.style.background = "var(--rule)";
+    if(k === pos) d.classList.add("f"); cout.append(d); }
+  const v = conv(pr, pc);
+  $("#cnninfo").textContent = `Here the filter's 9 numbers multiply the 9 pixels under it and add up to ${v.toFixed(2)}. ${KK === "b" ? "Blur just averages the patch." : Math.abs(v) >= 2 ? "Strong response: an edge of the right direction is here." : "Weak response: no matching edge here."} Green = positive, red = negative.`;
+}
+$("#cpos").addEventListener("input", renderCNN);
+$$("#kpick .chip").forEach(b => b.addEventListener("click", () => { KK = b.dataset.k; $$("#kpick .chip").forEach(x => x.setAttribute("aria-pressed", String(x === b))); renderCNN(); }));
+renderCNN();
+
+/* ---------- RNN ---------- */
+const RW = ["The","keys","to","the","old","cabinet","were","on","the","table"];
+let RI = 0, GATE = "rnn";
+function renderRNN(){
+  const row = $("#rnnrow"); row.innerHTML = "";
+  RW.forEach((w, i) => { if(i) { const a = document.createElement("span"); a.className = "arrow"; a.textContent = "→"; row.append(a); }
+    const c = document.createElement("div"); c.className = "cell" + (i < RI ? " on" : ""); c.innerHTML = `<div class="h">${i < RI ? "h" + (i+1) : ""}</div><span>${w}</span>`; row.append(c); });
+  const decay = GATE === "rnn" ? .55 : .88;
+  const box = $("#rmem"); box.innerHTML = "";
+  for(let i = 0; i < RI; i++){ const m = Math.pow(decay, RI - 1 - i);
+    const d = document.createElement("div"); d.className = "membar"; d.innerHTML = `<span>${RW[i]}</span><div class="bar"><i style="width:${m*100}%"></i></div><span>${Math.round(m*100)}%</span>`; box.append(d); }
+  $("#rstep").disabled = RI >= RW.length;
+  $("#rnninfo").textContent = RI < 2 ? "Each step squeezes the new word into the same fixed-size memory." :
+    RI >= 7 ? (GATE === "rnn" ? `To choose “were” (not “was”), the model must remember “keys”, now at ${Math.round(Math.pow(.55, RI-2)*100)}%. Plain RNNs lose it.` : `The LSTM's gates keep “keys” at ${Math.round(Math.pow(.88, RI-2)*100)}%, enough to pick “were”. Transformers skip the problem: attention can look straight back at any word.`) :
+    "Older words fade as new ones are squeezed in.";
+}
+$("#rstep").addEventListener("click", () => { if(RI < RW.length){ RI++; renderRNN(); } });
+$("#rreset").addEventListener("click", () => { RI = 0; renderRNN(); });
+$$("[data-g]").forEach(b => b.addEventListener("click", () => { GATE = b.dataset.g; $$("[data-g]").forEach(x => x.setAttribute("aria-pressed", String(x === b))); renderRNN(); }));
+renderRNN();
+
+/* ---------- Transformer masks ---------- */
+let TT = "dec", TR = 2;
+const SRC = ["Le","chat","dort"], TGT = ["The","cat","sleeps"], ONE = ["The","cat","[MASK]","on","mats"];
+function canSee(t, i, j){ if(t === "dec") return j <= i; if(t === "enc") return true; return null; }
+function renderTF(){
+  const g = $("#tfgrid"); g.innerHTML = "";
+  let rows, cols, see, info;
+  if(TT === "ed"){
+    rows = [...SRC.map(w => "enc: " + w), ...TGT.map(w => "dec: " + w)]; cols = [...SRC, ...TGT];
+    see = (i, j) => i < 3 ? j < 3 : (j < 3 || (j - 3) <= (i - 3));
+  } else { rows = ONE; cols = ONE; see = (i, j) => canSee(TT, i, j); }
+  const n = cols.length;
+  g.style.gridTemplateColumns = `76px repeat(${n}, minmax(0,1fr))`;
+  g.append(document.createElement("span"));
+  cols.forEach(c => { const h = document.createElement("span"); h.style.cssText = "aspect-ratio:auto; font-family:var(--mono); font-size:10px; text-align:center; color:var(--muted); overflow:hidden; white-space:nowrap"; h.textContent = c; g.append(h); });
+  rows.forEach((r, i) => {
+    const lab = document.createElement("button"); lab.type = "button"; lab.textContent = r; lab.style.cssText = `font-family:var(--mono); font-size:10.5px; text-align:right; border:0; background:${i === TR ? "var(--ink)" : "none"}; color:${i === TR ? "var(--bg)" : "var(--ink)"}; cursor:pointer; border-radius:3px; padding:0 4px; white-space:nowrap; overflow:hidden`;
+    lab.addEventListener("click", () => { TR = i; renderTF(); }); g.append(lab);
+    cols.forEach((_, j) => { const c = document.createElement("span"); const ok = see(i, j);
+      const cross = TT === "ed" && i >= 3 && j < 3;
+      c.style.background = ok ? (cross ? "var(--warn)" : (i === TR ? "var(--sc)" : mixc(.45))) : "var(--bg)";
+      c.style.border = "1px solid var(--rule)"; c.style.cursor = "pointer"; c.addEventListener("click", () => { TR = i; renderTF(); }); g.append(c); });
+  });
+  if(TR >= rows.length) TR = 0;
+  const seen = cols.filter((_, j) => see(TR, j));
+  const D = {dec:["Decoder-only","Each token sees itself and the past, never the future. That's what lets it be trained to predict the next word and then generate."],
+    enc:["Encoder-only","Every token sees every other token, in both directions. To fill in [MASK] it can use “on mats” after it. Great for understanding, but there's nothing to generate with."],
+    ed:["Encoder–decoder","The encoder reads the French in full (both directions). The decoder writes English using only its past words, plus <b style='color:var(--warn)'>cross-attention</b> (orange) to the whole French input."]}[TT];
+  $("#tfinfo").innerHTML = `<h5>${D[0]}</h5><p>${D[1]}</p><p class="note">“${rows[TR]}” can see: ${seen.join(", ")}</p>`;
+}
+$$("#tfpick .btn").forEach(b => b.addEventListener("click", () => { TT = b.dataset.t; TR = TT === "ed" ? 4 : 2; $$("#tfpick .btn").forEach(x => x.setAttribute("aria-pressed", String(x === b))); renderTF(); }));
+renderTF();
+
+/* ---------- MoE ---------- */
+const EXP = ["Code","Punctuation","Numbers","Names","Verbs","Science","Function words","French"];
+const MT = [["def",[9,1,1,1,1,1,1,0]],[" print",[8,1,0,1,4,0,1,0]],["(",[6,9,1,0,0,0,1,0]],[" 42",[3,1,9,0,0,2,0,0]],[" Paris",[0,0,0,9,0,1,1,5]],[" protein",[1,0,1,1,0,9,0,1]],[" ran",[0,0,0,1,9,1,2,0]],[" the",[1,1,0,1,1,0,9,1]],[" bonjour",[0,0,0,2,1,0,1,9]]];
+let MI = 4;
+const eBox = $("#experts"); EXP.forEach(n => { const d = document.createElement("div"); d.className = "expert"; d.innerHTML = `<b>${n}</b><span class="sc"></span><div class="bar"><i></i></div>`; eBox.append(d); });
+const tBox = $("#moetoks");
+MT.forEach(([t], i) => { const b = document.createElement("button"); b.type = "button"; b.className = "chip"; b.textContent = t.replace(/^ /, "·"); b.addEventListener("click", () => { MI = i; renderMoE(); }); tBox.append(b); });
+function renderMoE(){
+  $$(".chip", tBox).forEach((b, i) => b.setAttribute("aria-pressed", String(i === MI)));
+  const sc = MT[MI][1]; const ex = sc.map(v => Math.exp(v/2)); const z = ex.reduce((a,b) => a+b, 0); const p = ex.map(v => v/z);
+  const top = p.map((v, i) => [v, i]).sort((a,b) => b[0]-a[0]).slice(0,2).map(x => x[1]);
+  $$(".expert", eBox).forEach((d, i) => { d.classList.toggle("on", top.includes(i)); $(".sc", d).textContent = top.includes(i) ? `chosen · ${Math.round(p[i]*100)}%` : `${Math.round(p[i]*100)}%`; $(".bar i", d).style.width = (p[i]*100) + "%"; });
+  $("#moeinfo").textContent = `Token “${MT[MI][0].trim()}” → router sends it to ${EXP[top[0]]} and ${EXP[top[1]]}. Only 2 of 8 experts run, so about a quarter of this layer's parameters are used. Expert labels here are illustrative; real experts' specialities are messier.`;
+}
+renderMoE();
+
+/* ---------- SSM ---------- */
+const ss = $("#ssmsvg");
+const fmt = n => n >= 1e12 ? (n/1e12).toFixed(1)+" trillion" : n >= 1e9 ? (n/1e9).toFixed(1)+" billion" : n >= 1e6 ? (n/1e6).toFixed(1)+" million" : Math.round(n).toLocaleString();
+function renderSSM(){
+  const L = Math.round(Math.pow(10, +$("#slen").value));
+  $("#sleno").textContent = L.toLocaleString() + " tokens";
+  ss.innerHTML = "";
+  ss.append(s("path", {d:"M40 170 L400 170", style:"stroke:var(--rule)"}), s("path", {d:"M40 170 L40 14", style:"stroke:var(--rule)"}));
+  const xs = Array.from({length:61}, (_, i) => i/60);
+  const att = xs.map(t => `${40 + t*360} ${170 - t*t*150}`).join(" L"), lin = xs.map(t => `${40 + t*360} ${170 - t*150/ 6}`).join(" L");
+  ss.append(s("path", {d:"M" + att, style:"stroke:var(--bad); stroke-width:2.4; fill:none"}), s("path", {d:"M" + lin, style:"stroke:var(--accent); stroke-width:2.4; fill:none"}));
+  const t = (+$("#slen").value - 2)/4;
+  ss.append(s("path", {d:`M${40 + t*360} 14 L${40 + t*360} 170`, style:"stroke:var(--ink); stroke-dasharray:3 3"}));
+  ss.append(s("circle", {cx:40 + t*360, cy:170 - t*t*150, r:5, style:"fill:var(--bad)"}), s("circle", {cx:40 + t*360, cy:170 - t*25, r:5, style:"fill:var(--accent)"}));
+  ss.append(s("text", {x:396, y:28, "text-anchor":"end", style:"fill:var(--bad); font-size:12px"}, "attention ∝ length²"), s("text", {x:396, y:138, "text-anchor":"end", style:"fill:var(--accent); font-size:12px"}, "state-space ∝ length"), s("text", {x:220, y:192, "text-anchor":"middle", style:"fill:var(--muted); font-size:11px"}, "sequence length → (shape only, not to scale)"));
+  $("#satt").textContent = fmt(L*L/2); $("#sssm").textContent = fmt(L); $("#sx").textContent = fmt(L/2) + "×";
+}
+$("#slen").addEventListener("input", renderSSM); renderSSM();
+
+/* ---------- Diffusion ---------- */
+const N = 24, cv = $("#dcanvas"), ctx = cv.getContext("2d");
+const TARGET = [];
+for(let y = 0; y < N; y++) for(let x = 0; x < N; x++){
+  const dx = x - 11.5, dy = y - 11.5, r = Math.hypot(dx, dy);
+  let v = r < 10 ? .85 : .1;
+  if(Math.hypot(x - 8, y - 9) < 1.8 || Math.hypot(x - 15, y - 9) < 1.8) v = .05;
+  if(r > 5 && r < 7 && y > 13) v = .05;
+  TARGET.push(v);
+}
+let NOISE = [];
+function newNoise(){ NOISE = Array.from({length:N*N}, () => { let u = 0; for(let k = 0; k < 6; k++) u += Math.random(); return (u/6 - .5)*2.4 + .5; }); }
+newNoise();
+function renderD(){
+  const st = +$("#dstep").value; const a = Math.pow(st/50, 1.4);
+  $("#dsto").textContent = `${st} / 50`;
+  const img = ctx.createImageData(N, N);
+  for(let i = 0; i < N*N; i++){ const v = Math.max(0, Math.min(1, a*TARGET[i] + (1-a)*NOISE[i]));
+    img.data[i*4] = 250*v + 20*(1-v); img.data[i*4+1] = 200*v + 30*(1-v); img.data[i*4+2] = 60*v + 50*(1-v); img.data[i*4+3] = 255; }
+  ctx.putImageData(img, 0, 0);
+  $("#dinfo").textContent = st === 0 ? "Pure random noise. Every generation starts here." : st < 20 ? "The network predicts which part is noise and removes a little. Rough shapes appear." : st < 45 ? "Each step refines the guess. Details emerge." : "Done: a new image that matches what the model learned. A text prompt steers each step.";
+}
+$("#dstep").addEventListener("input", renderD);
+let timer = null;
+$("#dplay").addEventListener("click", () => { if(timer){ clearInterval(timer); timer = null; $("#dplay").textContent = "Play"; return; } const r = $("#dstep"); if(+r.value >= 50) r.value = 0; $("#dplay").textContent = "Pause"; timer = setInterval(() => { r.value = +r.value + 1; renderD(); if(+r.value >= 50){ clearInterval(timer); timer = null; $("#dplay").textContent = "Play"; } }, 70); });
+$("#dnew").addEventListener("click", () => { newNoise(); $("#dstep").value = 0; renderD(); });
+renderD();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,627 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>How Transformers Work</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Same visual system as the Atlas: one reading column, numbered stages that follow a token through the model. */
+:root{
+  --bg:#EDF0F2; --paper:#F8FAFB; --ink:#16212B; --muted:#55626E; --rule:#C9D1D8;
+  --accent:#0E6B66; --accent-soft:#D3E7E5; --warn:#A8601A; --warn-soft:#F2E2CF; --bad:#A33A3A; --bad-soft:#F1D9D7;
+  --u1:#3D5A80; --u2:#0E6B66; --u3:#8A5A12; --u4:#6A4C93; --u5:#A33A3A; --u6:#2F6B3A;
+  --display:"Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --body:"Source Serif 4", Georgia, "Times New Roman", serif;
+  --mono:"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#11171C; --paper:#182128; --ink:#E4E9ED; --muted:#9AA7B2; --rule:#2E3A44;
+  --accent:#4FB3AB; --accent-soft:#16332F; --warn:#D9954F; --warn-soft:#3A2A19; --bad:#E07A72; --bad-soft:#3A1F1E;
+  --u1:#86A6CF; --u2:#4FB3AB; --u3:#D2A55A; --u4:#AE93D6; --u5:#E07A72; --u6:#78B985; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#11171C; --paper:#182128; --ink:#E4E9ED; --muted:#9AA7B2; --rule:#2E3A44;
+  --accent:#4FB3AB; --accent-soft:#16332F; --warn:#D9954F; --warn-soft:#3A2A19; --bad:#E07A72; --bad-soft:#3A1F1E;
+  --u1:#86A6CF; --u2:#4FB3AB; --u3:#D2A55A; --u4:#AE93D6; --u5:#E07A72; --u6:#78B985; color-scheme:dark }
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto} *{transition:none !important} }
+body{margin:0; background:var(--bg); color:var(--ink); font-family:var(--body); font-size:17px; line-height:1.6;
+  padding-left:max(16px, env(safe-area-inset-left, 0px)); padding-right:max(16px, env(safe-area-inset-right, 0px)); padding-bottom:64px}
+a{color:var(--accent); text-underline-offset:3px}
+h1,h2,h3,h4,h5{font-family:var(--display); line-height:1.15; text-wrap:balance; margin:0}
+p{margin:0}
+button, input{font:inherit; color:inherit}
+:focus-visible{outline:2px solid var(--accent); outline-offset:3px}
+
+.tabsnav{max-width:1080px; margin:0 auto; display:flex; gap:4px; padding-top:20px; border-bottom:1px solid var(--rule); overflow-x:auto}
+.tabsnav a{font-family:var(--display); font-weight:700; font-size:15px; text-decoration:none; color:var(--muted); padding:10px 14px; border-radius:8px 8px 0 0; border:1px solid transparent; border-bottom:0; white-space:nowrap}
+.tabsnav a:hover{color:var(--ink)}
+.tabsnav a[aria-current="page"]{color:var(--ink); background:var(--paper); border-color:var(--rule); margin-bottom:-1px}
+
+.page{max-width:1080px; margin:0 auto}
+.mast{padding-block:44px 28px}
+.eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted)}
+.mast h1{font-size:clamp(38px, 6.5vw, 70px); font-weight:800; letter-spacing:-.02em; margin-top:10px}
+.lede{max-width:64ch; margin-top:16px; font-size:19px; color:var(--muted)}
+
+/* Pipeline nav */
+.pipe{position:sticky; top:0; z-index:5; background:var(--bg); padding-block:10px; border-bottom:1px solid var(--rule); margin-bottom:24px}
+.pipe ol{list-style:none; margin:0; padding:0; display:flex; gap:6px; overflow-x:auto; scrollbar-width:thin}
+.pipe a{display:flex; align-items:center; gap:6px; white-space:nowrap; text-decoration:none; color:var(--muted); font-family:var(--mono); font-size:12.5px; padding:7px 10px; border-radius:99px; border:1px solid var(--rule); background:var(--paper)}
+.pipe a b{font-family:var(--display); color:var(--ink); font-weight:700; font-size:13.5px}
+.pipe a.on{background:var(--ink); color:var(--bg); border-color:var(--ink)}
+.pipe a.on b{color:var(--bg)}
+.pipe li:not(:last-child)::after{content:"→"; color:var(--rule); margin-left:6px}
+.pipe li{display:flex; align-items:center}
+
+section.st{padding-block:12px 52px; border-bottom:1px solid var(--rule); margin-bottom:40px; scroll-margin-top:72px}
+section.st:last-of-type{border-bottom:0}
+.st-head{display:grid; gap:8px; padding-left:16px; border-left:6px solid var(--sc)}
+.st-head .eyebrow{color:var(--sc)}
+.st-head h2{font-size:clamp(28px, 4.4vw, 42px); font-weight:800; letter-spacing:-.015em}
+.st-head p{max-width:66ch; color:var(--muted); font-size:18px}
+.prose{display:grid; gap:12px; max-width:68ch; margin-top:16px}
+.lab{margin-top:20px; background:var(--paper); border:1px solid var(--rule); border-radius:12px; padding:20px; display:grid; gap:16px; min-width:0}
+.lab-title{font-family:var(--mono); font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted)}
+.note{font-family:var(--mono); font-size:12.5px; color:var(--muted); line-height:1.5}
+.key{border-left:4px solid var(--sc); padding:10px 14px; background:var(--bg); border-radius:0 8px 8px 0; font-size:16px; max-width:70ch}
+.key b{font-family:var(--display)}
+.row{display:flex; flex-wrap:wrap; gap:8px; align-items:center}
+.btn{font-family:var(--display); font-weight:700; font-size:14px; padding:8px 14px; border-radius:8px; border:1px solid var(--rule); background:var(--bg); cursor:pointer; min-height:40px}
+.btn:hover{border-color:var(--ink)}
+.btn.pri{background:var(--sc, var(--accent)); border-color:var(--sc, var(--accent)); color:var(--bg)}
+.btn[aria-pressed="true"]{background:var(--ink); color:var(--bg); border-color:var(--ink)}
+.chip{font-family:var(--mono); font-size:12.5px; padding:6px 10px; border-radius:99px; border:1px solid var(--rule); background:var(--bg); cursor:pointer; min-height:34px}
+.chip[aria-pressed="true"]{background:var(--ink); color:var(--bg); border-color:var(--ink)}
+input[type=text]{width:100%; font-size:17px; padding:10px 14px; border-radius:8px; border:1px solid var(--rule); background:var(--bg); min-height:44px}
+input[type=range]{width:100%; accent-color:var(--sc, var(--accent)); min-height:30px}
+.ctl{display:grid; gap:4px}
+.ctl label{font-family:var(--mono); font-size:12.5px; color:var(--muted); display:flex; justify-content:space-between; gap:8px}
+.ctl label output{color:var(--ink); font-weight:500}
+svg{display:block; width:100%; height:auto}
+svg text{font-family:var(--mono); fill:var(--ink); font-size:13px}
+.two{display:grid; grid-template-columns:minmax(0,1.2fr) minmax(0,1fr); gap:20px; align-items:start}
+@media (max-width:760px){ .two{grid-template-columns:minmax(0,1fr)} }
+
+/* 1 tokens */
+.toks{display:flex; flex-wrap:wrap; gap:4px}
+.tok{display:grid; gap:2px; padding:6px 8px; border-radius:6px; font-family:var(--mono); font-size:15px; white-space:pre; text-align:center}
+.tok small{font-size:10.5px; color:var(--muted)}
+.stats{display:flex; flex-wrap:wrap; gap:20px}
+.stat .v{font-family:var(--display); font-weight:800; font-size:28px; line-height:1}
+.stat .s{font-family:var(--mono); font-size:12px; color:var(--muted)}
+
+/* 2 embeddings */
+.emb svg .w{cursor:pointer}
+.emb svg .w circle{transition:r .2s}
+.emb svg .w:hover circle{r:7}
+
+/* 3 attention */
+.sent{display:flex; flex-wrap:wrap; gap:6px}
+.sent button{font-family:var(--mono); font-size:15px; padding:8px 10px; border-radius:6px; border:1px solid var(--rule); cursor:pointer; min-height:40px; position:relative}
+.sent button.q{outline:3px solid var(--ink); outline-offset:1px}
+.sent button.fut{opacity:.35}
+.sent button .pct{position:absolute; left:50%; transform:translateX(-50%); top:-18px; font-size:10.5px; color:var(--muted)}
+.mat{display:grid; gap:2px; font-family:var(--mono); font-size:10px; max-width:280px}
+.mat span{aspect-ratio:1; border-radius:2px}
+
+/* 4 qkv */
+.kv{display:grid; gap:10px}
+.kvrow{display:grid; grid-template-columns:76px minmax(0,1fr) 54px 110px; gap:10px; align-items:center}
+.kvrow .w{font-family:var(--mono); font-size:14px}
+.kvrow .bar{height:16px; border-radius:4px; background:var(--rule); position:relative; overflow:hidden}
+.kvrow .bar i{position:absolute; inset:0 auto 0 0; background:var(--sc)}
+.kvrow .p{font-family:var(--mono); font-size:13px; text-align:right}
+.sw{width:28px; height:28px; border-radius:6px; border:1px solid var(--rule); display:inline-block; vertical-align:middle}
+.mix{display:flex; align-items:center; gap:12px; font-family:var(--mono); font-size:13px}
+.mix .sw{width:56px; height:56px; border-radius:10px}
+@media (max-width:560px){ .kvrow{grid-template-columns:64px minmax(0,1fr) 46px} .kvrow .ctl{grid-column:1 / -1} }
+
+/* 5 residual stream */
+.rs{display:grid; grid-template-columns:200px minmax(0,1fr); gap:20px; align-items:start}
+@media (max-width:640px){ .rs{grid-template-columns:minmax(0,1fr)} }
+.stack{display:grid; gap:6px}
+.layer{display:flex; justify-content:space-between; align-items:center; padding:8px 12px; border-radius:8px; border:1px solid var(--rule); background:var(--bg); font-family:var(--display); font-weight:700; font-size:14px; cursor:pointer; text-align:left; min-height:40px}
+.layer small{font-family:var(--mono); font-weight:400; font-size:11.5px; color:var(--muted)}
+.layer.done{border-color:var(--sc); background:var(--accent-soft)}
+.layer.cur{outline:3px solid var(--sc); outline-offset:1px}
+.mem{display:grid; gap:8px}
+.mem .item{display:grid; grid-template-columns:auto 1fr; gap:10px; align-items:start; padding:10px 12px; border-radius:8px; background:var(--bg); border:1px solid var(--rule); font-size:15.5px; line-height:1.45}
+.mem .item .src{font-family:var(--mono); font-size:11px; padding:2px 7px; border-radius:99px; background:var(--sc); color:var(--bg); white-space:nowrap; margin-top:2px}
+.mem .item.new{border-color:var(--sc); animation:pop .5s ease}
+@keyframes pop{from{transform:translateY(-6px); opacity:0}to{transform:none; opacity:1}}
+
+/* 6 next token */
+.bars{display:grid; gap:6px}
+.brow{display:grid; grid-template-columns:84px minmax(0,1fr) 60px; gap:10px; align-items:center; font-family:var(--mono); font-size:14px}
+.brow .bar{height:20px; border-radius:4px; background:var(--rule); position:relative; overflow:hidden}
+.brow .bar i{position:absolute; inset:0 auto 0 0; background:var(--sc); transition:width .25s}
+.brow .p{text-align:right; font-size:13px}
+.brow.hit .bar i{background:var(--warn)}
+.gen{font-family:var(--body); font-size:20px; line-height:1.6; padding:14px 16px; background:var(--bg); border-radius:8px; min-height:60px}
+.gen span.n{background:var(--accent-soft); border-radius:4px; padding:0 3px; animation:pop .4s ease}
+.trace{font-family:var(--mono); font-size:12.5px; color:var(--muted); display:grid; gap:4px; max-height:180px; overflow:auto}
+
+/* 7 training */
+.loss svg .dot{transition:cx .2s, cy .2s}
+
+/* 8 safety map */
+.map svg .hot{cursor:pointer}
+.map svg .hot:hover rect, .map svg .hot.sel rect{stroke-width:3}
+.panel{padding:12px 16px; border-radius:8px; background:var(--bg); border-left:4px solid var(--sc); display:grid; gap:6px; font-size:15.5px; min-height:56px}
+.panel h5{font-size:16px}
+footer{max-width:1080px; margin:0 auto; padding-top:24px; border-top:1px solid var(--rule); font-family:var(--mono); font-size:12.5px; color:var(--muted)}
+</style>
+</head>
+<body>
+
+<nav class="tabsnav" aria-label="Pages">
+  <a href="index.html">Course atlas</a>
+  <a href="how-models-work.html" aria-current="page">How transformers work</a>
+  <a href="architectures.html">Architectures</a>
+</nav>
+
+<div class="page">
+<header class="mast">
+  <div class="eyebrow">Interactive explainer · transformers</div>
+  <h1>How transformers work</h1>
+  <p class="lede">Follow one piece of text through a transformer, from letters to a prediction. Every section is something you can poke at. The numbers are simplified toy versions, built to show the idea rather than copied from a real model.</p>
+</header>
+
+<nav class="pipe" aria-label="Stages">
+  <ol>
+    <li><a href="#s1"><span>1</span><b>Tokens</b></a></li>
+    <li><a href="#s2"><span>2</span><b>Embeddings</b></a></li>
+    <li><a href="#s3"><span>3</span><b>Attention</b></a></li>
+    <li><a href="#s4"><span>4</span><b>Q · K · V</b></a></li>
+    <li><a href="#s5"><span>5</span><b>Residual stream</b></a></li>
+    <li><a href="#s6"><span>6</span><b>Next token</b></a></li>
+    <li><a href="#s7"><span>7</span><b>Training</b></a></li>
+    <li><a href="#s8"><span>8</span><b>Where safety fits</b></a></li>
+  </ol>
+</nav>
+
+<main>
+<!-- 1 -->
+<section class="st" id="s1" style="--sc:var(--u1)">
+  <div class="st-head"><div class="eyebrow">Step 1</div><h2>Text becomes tokens</h2>
+    <p>A model never sees letters. Text is chopped into tokens (common words, or pieces of rarer ones), and each token is swapped for an ID number.</p></div>
+  <div class="lab">
+    <div class="lab-title">Try it: type anything</div>
+    <input type="text" id="tokin" value="Unbelievably, the cat sat on the mat." aria-label="Text to split into tokens">
+    <div class="toks" id="tokout" aria-live="polite"></div>
+    <div class="stats"><div class="stat"><div class="v" id="nchar">0</div><div class="s">characters</div></div><div class="stat"><div class="v" id="ntok">0</div><div class="s">tokens</div></div><div class="stat"><div class="v" id="ratio">0</div><div class="s">characters per token</div></div></div>
+    <p class="note">This is a simplified imitation. Real tokenizers (byte-pair encoding) learn their pieces from data. Common words become a single token, often including the space before them; rare words split into chunks. The · marks a leading space.</p>
+  </div>
+  <p class="key"><b>Why it matters:</b> the model's whole world is a sequence of IDs. Odd tokenization is why models used to struggle to count the letters in "strawberry".</p>
+</section>
+
+<!-- 2 -->
+<section class="st" id="s2" style="--sc:var(--u2)">
+  <div class="st-head"><div class="eyebrow">Step 2</div><h2>Tokens become vectors</h2>
+    <p>Each ID is looked up in a big table and turned into a list of thousands of numbers: an embedding. Training arranges them so tokens with similar meanings land near each other.</p></div>
+  <div class="lab emb">
+    <div class="lab-title">Try it: click a word to see its neighbours</div>
+    <div class="two">
+      <svg id="embsvg" viewBox="0 0 440 290" role="img" aria-label="A 2D map of word embeddings with clusters for people, animals, places and actions"></svg>
+      <div style="display:grid; gap:12px">
+        <div class="panel" id="embinfo" aria-live="polite"><p class="note">Pick a word on the map.</p></div>
+        <button class="btn pri" type="button" id="analogy">Show: king − man + woman</button>
+        <p class="note">Real embeddings have thousands of dimensions. This map squashes them into two, so treat distances as a sketch.</p>
+      </div>
+    </div>
+  </div>
+  <p class="key"><b>Directions carry meaning.</b> The step from "man" to "woman" points the same way as "king" to "queen". This is the same idea as a <i>feature</i> in interpretability: a direction that stands for a concept.</p>
+</section>
+
+<!-- 3 -->
+<section class="st" id="s3" style="--sc:var(--u3)">
+  <div class="st-head"><div class="eyebrow">Step 3</div><h2>Attention: words look at each other</h2>
+    <p>On its own, "it" means nothing. Attention lets each token pull in information from the tokens before it. A layer runs many attention heads at once, each looking for a different pattern.</p></div>
+  <div class="lab">
+    <div class="lab-title">Try it: click a word, switch heads, change the last word</div>
+    <div class="row" id="heads" role="group" aria-label="Attention head"></div>
+    <div class="sent" id="sent" style="margin-top:18px"></div>
+    <div class="row"><span class="note">Last word:</span><button class="chip" type="button" aria-pressed="true" data-end="tired">tired</button><button class="chip" type="button" aria-pressed="false" data-end="wide">wide</button></div>
+    <div class="two">
+      <div class="panel" id="attinfo" aria-live="polite"></div>
+      <div><div class="note" style="margin-bottom:6px">The whole pattern for this head. Rows are the word looking; columns are the words it looks at. The top-right is empty because a word can't see the future.</div><div class="mat" id="mat" aria-hidden="true"></div></div>
+    </div>
+  </div>
+  <p class="key"><b>Context changes the answer.</b> Change "tired" to "wide" and "it" switches from the animal to the street. Attention is how the model brings that in. These heads are hand-built illustrations of patterns researchers have found in real models.</p>
+</section>
+
+<!-- 4 -->
+<section class="st" id="s4" style="--sc:var(--u4)">
+  <div class="st-head"><div class="eyebrow">Step 4</div><h2>Inside one head: query, key, value</h2>
+    <p>Each token makes three vectors. Its <b>query</b> asks "what am I looking for?". Every earlier token's <b>key</b> answers "here's what I contain". Query·key scores go through a softmax to become weights, and the output is a weighted mix of the tokens' <b>values</b>.</p></div>
+  <div class="lab">
+    <div class="lab-title">Try it: drag the scores for the query "it"</div>
+    <div class="kv" id="kv"></div>
+    <div class="ctl"><label for="temp4">Softmax sharpness (dividing by √d keeps this sensible) <output id="t4o">1.0</output></label><input type="range" id="temp4" min="0.2" max="3" step="0.1" value="1"></div>
+    <div class="mix"><span class="sw" id="mixsw"></span><span id="mixtxt"></span></div>
+    <p class="note">Values are shown as colours so you can see the mix. Real values are vectors of numbers, and the mix is a weighted average of them.</p>
+  </div>
+  <p class="key"><b>The formula:</b> output = softmax(Q·Kᵀ / √d) · V. That's all attention is: score, normalise, mix.</p>
+</section>
+
+<!-- 5 -->
+<section class="st" id="s5" style="--sc:var(--u2)">
+  <div class="st-head"><div class="eyebrow">Step 5</div><h2>The residual stream builds up meaning</h2>
+    <p>Each token's vector travels up through dozens of layers. Each layer has an attention block (look at other tokens) and an MLP block (process and recall facts). Both <b>add</b> their output to the stream, so information piles up rather than being overwritten.</p></div>
+  <div class="lab">
+    <div class="lab-title">Try it: step the word "bank" through the layers</div>
+    <p style="font-size:18px">"I sat by the river <b style="background:var(--warn-soft); padding:0 4px; border-radius:4px">bank</b> and …"</p>
+    <div class="rs">
+      <div class="stack" id="stack"></div>
+      <div style="display:grid; gap:12px">
+        <div class="mem" id="mem" aria-live="polite"></div>
+        <div class="row"><button class="btn" type="button" id="rsprev">← Back</button><button class="btn pri" type="button" id="rsnext">Next layer →</button><button class="btn" type="button" id="rsreset">Reset</button></div>
+      </div>
+    </div>
+    <p class="note">A cartoon. Real models don't store tidy English labels. But probes and SAEs find information like this appearing in the stream layer by layer.</p>
+  </div>
+  <p class="key"><b>Why safety people care:</b> the residual stream is where interpretability tools read and write. Probes read it; steering adds a feature direction to it.</p>
+</section>
+
+<!-- 6 -->
+<section class="st" id="s6" style="--sc:var(--u3)">
+  <div class="st-head"><div class="eyebrow">Step 6</div><h2>Predicting the next token</h2>
+    <p>At the top, the final vector is compared with every token in the vocabulary to give a score (logit) for each. Softmax turns the scores into probabilities, and one token is picked. Temperature controls how adventurous the pick is.</p></div>
+  <div class="lab">
+    <div class="lab-title">Try it: "The Eiffel Tower is in …"</div>
+    <div class="ctl"><label for="temp6">Temperature <output id="t6o">1.0</output></label><input type="range" id="temp6" min="0.1" max="2.5" step="0.05" value="1"></div>
+    <div class="bars" id="bars6"></div>
+    <div class="row"><button class="btn pri" type="button" id="samp1">Sample once</button><button class="btn" type="button" id="samp50">Sample 50 times</button><span class="note" id="sampout" aria-live="polite"></span></div>
+  </div>
+  <div class="lab">
+    <div class="lab-title">Try it: generate one word at a time</div>
+    <div class="gen" id="gen" aria-live="polite"></div>
+    <div class="row"><button class="btn pri" type="button" id="gstep">Next token</button><button class="btn" type="button" id="gauto">Finish the sentence</button><button class="btn" type="button" id="greset">Start again</button></div>
+    <div class="trace" id="gtrace"></div>
+    <p class="note">This toy only looks at the previous word. A real model looks at the whole context through attention, but the loop is the same: predict, pick, append, repeat.</p>
+  </div>
+  <p class="key"><b>That's all generation is:</b> one token at a time, each chosen from a probability distribution. Low temperature is near-deterministic; high temperature gets creative, then incoherent.</p>
+</section>
+
+<!-- 7 -->
+<section class="st" id="s7" style="--sc:var(--u1)">
+  <div class="st-head"><div class="eyebrow">Step 7</div><h2>How it learns</h2>
+    <p>Training shows the model real text, asks it to predict each next token, and measures how surprised it was (the loss). Then every weight is nudged a tiny amount in the direction that would have made the right answer more likely. Repeat trillions of times.</p></div>
+  <div class="lab loss">
+    <div class="lab-title">Try it: drag through training</div>
+    <div class="two">
+      <svg id="losssvg" viewBox="0 0 420 220" role="img" aria-label="Loss falls over training steps while the probability of the right answer rises"></svg>
+      <div style="display:grid; gap:12px">
+        <div class="ctl"><label for="step7">Training progress <output id="s7o">0%</output></label><input type="range" id="step7" min="0" max="100" step="1" value="0"></div>
+        <div class="stats"><div class="stat"><div class="v" id="p7">0%</div><div class="s">chance it says "Paris"</div></div><div class="stat"><div class="v" id="l7">0</div><div class="s">loss (−log p)</div></div></div>
+        <div class="panel" id="pred7"></div>
+      </div>
+    </div>
+  </div>
+  <div class="lab">
+    <div class="lab-title">The three stages, and where safety training happens</div>
+    <svg viewBox="0 0 860 150" role="img" aria-label="Pretraining, then supervised fine-tuning, then RLHF">
+      <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--ink)"/></marker></defs>
+      <rect x="10" y="20" width="260" height="96" rx="8" style="fill:var(--bg); stroke:var(--ink)"/>
+      <text x="140" y="50" text-anchor="middle" style="font-family:var(--display); font-weight:700; font-size:16px">Pretraining</text>
+      <text x="140" y="74" text-anchor="middle" style="font-size:12px">predict the next token</text><text x="140" y="92" text-anchor="middle" style="font-size:12px; fill:var(--muted)">trillions of tokens · months</text>
+      <path d="M274 68 L306 68" style="stroke:var(--ink); stroke-width:1.5; fill:none" marker-end="url(#ah)"/>
+      <rect x="310" y="20" width="240" height="96" rx="8" style="fill:var(--bg); stroke:var(--ink)"/>
+      <text x="430" y="50" text-anchor="middle" style="font-family:var(--display); font-weight:700; font-size:16px">Fine-tuning</text>
+      <text x="430" y="74" text-anchor="middle" style="font-size:12px">learn to be an assistant</text><text x="430" y="92" text-anchor="middle" style="font-size:12px; fill:var(--muted)">example conversations</text>
+      <path d="M554 68 L586 68" style="stroke:var(--ink); stroke-width:1.5; fill:none" marker-end="url(#ah)"/>
+      <rect x="590" y="20" width="260" height="96" rx="8" style="fill:var(--accent-soft); stroke:var(--accent); stroke-width:1.5"/>
+      <text x="720" y="50" text-anchor="middle" style="font-family:var(--display); font-weight:700; font-size:16px">RLHF / Constitutional AI</text>
+      <text x="720" y="74" text-anchor="middle" style="font-size:12px">learn what "good" means</text><text x="720" y="92" text-anchor="middle" style="font-size:12px; fill:var(--muted)">preferences · reward model</text>
+      <text x="140" y="140" text-anchor="middle" style="font-size:12px; fill:var(--accent)">← data filtering acts here</text>
+      <text x="720" y="140" text-anchor="middle" style="font-size:12px; fill:var(--accent)">← Unit 2 of the course</text>
+    </svg>
+  </div>
+  <p class="key"><b>Nobody writes the rules.</b> Behaviour comes out of this optimisation, which is why we "grow" models rather than build them, and why we can't easily read what they've learned.</p>
+</section>
+
+<!-- 8 -->
+<section class="st" id="s8" style="--sc:var(--u5)">
+  <div class="st-head"><div class="eyebrow">Step 8</div><h2>Where each safety technique plugs in</h2>
+    <p>Everything from the course attaches to a specific part of this pipeline. (Other designs are on the <a href="architectures.html">Architectures</a> tab.) Click a part to see which techniques act there.</p></div>
+  <div class="lab map">
+    <svg id="mapsvg" viewBox="0 0 860 230" role="img" aria-label="Pipeline from training data to output with safety techniques attached to each part"></svg>
+    <div class="panel" id="mapinfo" aria-live="polite"><p class="note">Click any box.</p></div>
+  </div>
+  <p class="key"><b>Defence in depth:</b> no single box is enough. Back in the <a href="index.html">course atlas</a>, every unit adds another layer.</p>
+</section>
+</main>
+
+<footer>An illustrative explainer for the BlueDot Technical AI Safety course. All numbers, weights and vectors are hand-made toys chosen to show the mechanism, not taken from a real model.</footer>
+</div>
+
+<script>
+(function(){
+"use strict";
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const NS = "http://www.w3.org/2000/svg";
+function s(tag, attrs={}, text){ const n = document.createElementNS(NS, tag); for(const k in attrs) n.setAttribute(k, attrs[k]); if(text != null) n.textContent = text; return n; }
+function softmax(xs, t=1){ const m = Math.max(...xs.map(x => x/t)); const e = xs.map(x => Math.exp(x/t - m)); const z = e.reduce((a,b) => a+b, 0); return e.map(x => x/z); }
+
+/* ---------- pipeline highlight ---------- */
+const pl = $$(".pipe a");
+if("IntersectionObserver" in window){
+  const io = new IntersectionObserver(es => es.forEach(e => { if(e.isIntersecting) pl.forEach(a => { const on = a.getAttribute("href") === "#"+e.target.id; a.classList.toggle("on", on); if(on) a.scrollIntoView({block:"nearest", inline:"nearest"}); }); }), {rootMargin:"-30% 0px -60% 0px"});
+  $$("section.st").forEach(x => io.observe(x));
+}
+
+/* ---------- 1 tokenizer ---------- */
+const PRE = ["un","re","dis","over","under","pre"], SUF = ["ably","ably","ness","tion","ment","able","ing","ed","ly","er","est","s"];
+const COMMON = new Set("the a an and of to in on at is it was for with as by that this cat sat mat dog i you he she we they be are not but or from have has had do did can will would model models ai".split(" "));
+function hash(t){ let h = 2166136261; for(const c of t){ h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return (h >>> 0) % 50257; }
+function splitWord(w){
+  const lw = w.toLowerCase();
+  if(w.length <= 5 || COMMON.has(lw)) return [w];
+  const out = []; let rest = w;
+  for(const p of PRE){ if(rest.toLowerCase().startsWith(p) && rest.length - p.length >= 4){ out.push(rest.slice(0, p.length)); rest = rest.slice(p.length); break; } }
+  let suf = "";
+  for(const x of SUF){ if(rest.toLowerCase().endsWith(x) && rest.length - x.length >= 3){ suf = rest.slice(rest.length - x.length); rest = rest.slice(0, rest.length - x.length); break; } }
+  while(rest.length > 6){ out.push(rest.slice(0, 5)); rest = rest.slice(5); }
+  out.push(rest); if(suf) out.push(suf);
+  return out;
+}
+function tokenize(txt){
+  const parts = txt.match(/ ?[A-Za-z]+| ?\d{1,3}| ?[^\sA-Za-z\d]|\s+/g) || [];
+  const toks = [];
+  parts.forEach(p => {
+    if(/^\s+$/.test(p)){ toks.push(p); return; }
+    const sp = p.startsWith(" ") ? " " : ""; const core = sp ? p.slice(1) : p;
+    if(/^[A-Za-z]+$/.test(core)){ const pcs = splitWord(core); pcs.forEach((c, i) => toks.push((i === 0 ? sp : "") + c)); }
+    else toks.push(p);
+  });
+  return toks;
+}
+const TCOL = ["var(--accent-soft)","var(--warn-soft)","var(--bad-soft)","color-mix(in srgb, var(--u4) 22%, var(--paper))","color-mix(in srgb, var(--u1) 22%, var(--paper))"];
+function renderTok(){
+  const txt = $("#tokin").value;
+  const toks = tokenize(txt); const out = $("#tokout"); out.innerHTML = "";
+  toks.forEach((t, i) => { const d = document.createElement("span"); d.className = "tok"; d.style.background = TCOL[i % TCOL.length];
+    d.innerHTML = `<span></span><small>#${hash(t)}</small>`; d.firstChild.textContent = t.replace(/^ /, "·").replace(/\n/g, "↵"); out.append(d); });
+  $("#nchar").textContent = txt.length; $("#ntok").textContent = toks.length; $("#ratio").textContent = toks.length ? (txt.length/toks.length).toFixed(1) : "0";
+}
+$("#tokin").addEventListener("input", renderTok); renderTok();
+
+/* ---------- 2 embeddings ---------- */
+const W = {
+  man:[70,150,"people"], woman:[70,90,"people"], king:[210,150,"people"], queen:[210,90,"people"], boy:[40,165,"people"], girl:[40,75,"people"],
+  cat:[330,52,"animals"], kitten:[305,38,"animals"], dog:[360,78,"animals"], puppy:[388,58,"animals"],
+  Paris:[318,192,"places"], London:[352,214,"places"], France:[292,222,"places"],
+  run:[150,238,"actions"], walk:[178,256,"actions"], sit:[120,262,"actions"]
+};
+const GC = {people:"var(--u1)", animals:"var(--u2)", places:"var(--u3)", actions:"var(--u4)"};
+const esvg = $("#embsvg");
+const gLines = s("g"), gPts = s("g");
+esvg.append(s("path", {d:"M20 280 L20 10", style:"stroke:var(--rule)"}), s("path", {d:"M20 280 L430 280", style:"stroke:var(--rule)"}), gLines, gPts);
+[["people",130,30],["animals",345,20],["places",330,250],["actions",80,224]].forEach(([g,x,y]) => esvg.append(s("text", {x, y, "text-anchor":"middle", style:`fill:${GC[g]}; font-size:11px; letter-spacing:.08em`}, g.toUpperCase())));
+const nodes = {};
+for(const [w, [x, y, g]] of Object.entries(W)){
+  const grp = s("g", {class:"w", tabindex:"0", role:"button", "aria-label":w});
+  grp.append(s("circle", {cx:x, cy:y, r:5, style:`fill:${GC[g]}`}), s("text", {x:x+8, y:y+4, style:"font-size:12.5px"}, w));
+  grp.addEventListener("click", () => pick(w)); grp.addEventListener("keydown", e => { if(e.key==="Enter"||e.key===" "){ e.preventDefault(); pick(w); } });
+  gPts.append(grp); nodes[w] = grp;
+}
+const dist = (a, b) => Math.hypot(W[a][0]-W[b][0], W[a][1]-W[b][1]);
+function pick(w){
+  gLines.innerHTML = "";
+  const near = Object.keys(W).filter(x => x !== w).sort((a,b) => dist(w,a) - dist(w,b)).slice(0,3);
+  near.forEach(n => gLines.append(s("path", {d:`M${W[w][0]} ${W[w][1]} L${W[n][0]} ${W[n][1]}`, style:"stroke:var(--ink); stroke-width:1.2; stroke-dasharray:3 3"})));
+  const sim = n => Math.max(0, 1 - dist(w,n)/300).toFixed(2);
+  $("#embinfo").innerHTML = `<h5>${w}</h5><p>Nearest neighbours: ${near.map(n => `<b>${n}</b> <span class="note">(similarity ${sim(n)})</span>`).join(", ")}</p><p class="note">Far away: ${Object.keys(W).sort((a,b) => dist(w,b) - dist(w,a))[0]}</p>`;
+}
+$("#analogy").addEventListener("click", () => {
+  gLines.innerHTML = "";
+  const arrow = (a, b, col, dash) => gLines.append(s("path", {d:`M${a[0]} ${a[1]} L${b[0]} ${b[1]}`, style:`stroke:${col}; stroke-width:2.2; ${dash ? "stroke-dasharray:5 4;" : ""}`}));
+  arrow(W.man, W.woman, "var(--bad)"); arrow(W.king, W.queen, "var(--bad)", true);
+  arrow(W.man, W.king, "var(--accent)");
+  $("#embinfo").innerHTML = `<h5>king − man + woman ≈ queen</h5><p>Start at <b>king</b>, take away the "man" direction, add the "woman" direction, and you land on <b>queen</b>. The red arrows are parallel: the same direction means "male → female" wherever it appears.</p>`;
+});
+pick("cat");
+
+/* ---------- 3 attention ---------- */
+const BASE = ["The","animal","didn't","cross","the","street","because","it","was","too"];
+let END = "tired", HEAD = 0, QI = 7;
+const HEADS = [
+  {name:"Pronoun → noun", desc:"Links “it” to the noun it refers to. Which noun depends on the rest of the sentence."},
+  {name:"Previous token", desc:"Always looks one step back. Simple, but common in real models, and part of how they copy patterns."},
+  {name:"Start of text", desc:"Dumps most attention on the first token when it has nothing useful to find. Real models do this a lot (an 'attention sink')."},
+  {name:"Same word", desc:"Looks for earlier copies of the same word, e.g. the second “the” finds the first."}
+];
+function toksA(){ return [...BASE, END]; }
+function weights(h, i){
+  const T = toksA(); const sc = T.map((_, j) => j > i ? -Infinity : 0);
+  for(let j = 0; j <= i; j++){
+    if(h === 0){ sc[j] = j === i ? 1 : 0;
+      if(T[i] === "it"){ if(T[j] === "animal") sc[j] = END === "tired" ? 4 : 1.2; if(T[j] === "street") sc[j] = END === "wide" ? 4 : 1.2; }
+      else if(T[i] === END){ const ii = T.indexOf("it"); if(j === ii) sc[j] = 2.5; if(T[j] === (END === "tired" ? "animal" : "street")) sc[j] = 2.8; }
+      else if(["was","too"].includes(T[i]) && T[j] === "it") sc[j] = 2.5;
+      else if(T[j] === "animal" || T[j] === "street") sc[j] = .8;
+    }
+    if(h === 1) sc[j] = j === i - 1 ? 4 : (j === i ? 1 : 0);
+    if(h === 2) sc[j] = j === 0 ? 3.5 : (j === i ? 1 : 0);
+    if(h === 3) sc[j] = (j < i && T[j].toLowerCase() === T[i].toLowerCase()) ? 4 : (j === 0 ? 1.5 : (j === i ? 1 : 0));
+  }
+  const vals = sc.slice(0, i+1); const sm = softmax(vals);
+  return T.map((_, j) => j <= i ? sm[j] : 0);
+}
+const headsBox = $("#heads");
+HEADS.forEach((h, k) => { const b = document.createElement("button"); b.type = "button"; b.className = "btn"; b.textContent = `Head ${k+1}: ${h.name}`; b.setAttribute("aria-pressed", String(k === 0)); b.addEventListener("click", () => { HEAD = k; $$("button", headsBox).forEach((x, i) => x.setAttribute("aria-pressed", String(i === k))); renderAtt(); }); headsBox.append(b); });
+$$("[data-end]").forEach(b => b.addEventListener("click", () => { END = b.dataset.end; $$("[data-end]").forEach(x => x.setAttribute("aria-pressed", String(x === b))); renderAtt(); }));
+function renderAtt(){
+  const T = toksA(); const w = weights(HEAD, QI); const box = $("#sent"); box.innerHTML = "";
+  const max = Math.max(...w.slice(0, QI));
+  T.forEach((t, j) => {
+    const b = document.createElement("button"); b.type = "button";
+    b.innerHTML = `<span></span>`; b.firstChild.textContent = t;
+    const a = w[j];
+    b.style.background = j <= QI ? `color-mix(in srgb, var(--warn) ${Math.round(a*85)}%, var(--bg))` : "var(--bg)";
+    if(a > .5) b.style.color = "var(--bg)";
+    if(j === QI) b.classList.add("q"); if(j > QI) b.classList.add("fut");
+    if(j <= QI){ const p = document.createElement("span"); p.className = "pct"; p.textContent = Math.round(a*100) + "%"; b.append(p); }
+    b.setAttribute("aria-label", `${t}${j <= QI ? ", attention " + Math.round(a*100) + "%" : ", in the future"}`);
+    b.addEventListener("click", () => { QI = j; renderAtt(); });
+    box.append(b);
+  });
+  const top = w.map((v, j) => [v, j]).filter(([v, j]) => j !== QI || QI === 0).sort((a,b) => b[0]-a[0])[0];
+  $("#attinfo").innerHTML = `<h5>${HEADS[HEAD].name}</h5><p>${HEADS[HEAD].desc}</p><p>“<b>${T[QI]}</b>” looks most at “<b>${T[top[1]]}</b>” (${Math.round(top[0]*100)}%). Greyed-out words come later, so it can't see them.</p>`;
+  const m = $("#mat"); m.innerHTML = ""; m.style.gridTemplateColumns = `repeat(${T.length}, minmax(0,1fr))`;
+  T.forEach((_, i) => { const wi = weights(HEAD, i); T.forEach((_, j) => { const c = document.createElement("span");
+    c.style.background = j > i ? "transparent" : `color-mix(in srgb, var(--warn) ${Math.round(wi[j]*100)}%, var(--bg))`;
+    if(i === QI && j <= i) c.style.outline = "1.5px solid var(--ink)"; m.append(c); }); });
+}
+renderAtt();
+
+/* ---------- 4 QKV ---------- */
+const KV = [
+  {w:"animal", s:3.0, c:[46,139,87]},
+  {w:"street", s:1.0, c:[120,130,140]},
+  {w:"cross", s:0.4, c:[200,120,40]},
+  {w:"The", s:0.0, c:[90,110,200]}
+];
+const kvBox = $("#kv");
+KV.forEach((k, i) => {
+  const r = document.createElement("div"); r.className = "kvrow";
+  r.innerHTML = `<span class="w">${k.w} <span class="sw" style="background:rgb(${k.c})"></span></span><div class="bar"><i></i></div><span class="p"></span><div class="ctl"><label for="kv${i}">q·k <output>${k.s.toFixed(1)}</output></label><input type="range" id="kv${i}" min="-2" max="5" step="0.1" value="${k.s}"></div>`;
+  $("input", r).addEventListener("input", e => { k.s = +e.target.value; $("output", r).textContent = k.s.toFixed(1); renderKV(); });
+  kvBox.append(r);
+});
+$("#temp4").addEventListener("input", e => { $("#t4o").textContent = (+e.target.value).toFixed(1); renderKV(); });
+function renderKV(){
+  const t = +$("#temp4").value; const w = softmax(KV.map(k => k.s), t);
+  $$(".kvrow", kvBox).forEach((r, i) => { $(".bar i", r).style.width = (w[i]*100) + "%"; $(".p", r).textContent = Math.round(w[i]*100) + "%"; });
+  const mix = [0,1,2].map(ch => Math.round(KV.reduce((a, k, i) => a + w[i]*k.c[ch], 0)));
+  $("#mixsw").style.background = `rgb(${mix})`;
+  const top = w.indexOf(Math.max(...w));
+  $("#mixtxt").innerHTML = `Output for “it” = weighted mix of values.<br>Mostly <b>${KV[top].w}</b> (${Math.round(w[top]*100)}%)${w[top] > .9 ? ": nearly a copy." : w[top] < .4 ? ": a blurry blend." : "."}`;
+}
+renderKV();
+
+/* ---------- 5 residual stream ---------- */
+const LAYERS = [
+  {n:"Embedding", k:"embed", t:"Token “bank”. Could mean a money bank or a riverbank: the embedding holds both possibilities."},
+  {n:"Layer 1 · attention", k:"attn", t:"Previous word is “river”, copied in by a previous-token head."},
+  {n:"Layer 2 · MLP", k:"mlp", t:"“river” + “bank” → riverbank: the land beside water. The money meaning is pushed down."},
+  {n:"Layer 6 · attention", k:"attn", t:"Subject is “I”, and the verb was “sat”: someone is sitting outdoors by water."},
+  {n:"Layer 12 · MLP", k:"mlp", t:"Recalled association: riverbanks have grass, fish, ducks and water views."},
+  {n:"Layer 20 · attention", k:"attn", t:"Next word is “and”, so what follows is probably another action by “I”."},
+  {n:"Final layer", k:"out", t:"Prediction for the word after “and”: watched (24%), fished (11%), the (8%), listened (6%)…"}
+];
+let RS = 0;
+const stack = $("#stack"), mem = $("#mem");
+LAYERS.slice().reverse().forEach((L, ri) => { const i = LAYERS.length - 1 - ri; const b = document.createElement("button"); b.type = "button"; b.className = "layer"; b.innerHTML = `<span>${L.n}</span><small>${L.k === "attn" ? "looks around" : L.k === "mlp" ? "recalls" : L.k === "out" ? "predicts" : "starts"}</small>`; b.addEventListener("click", () => { RS = i; renderRS(true); }); stack.append(b); });
+function renderRS(anim){
+  const bs = $$(".layer", stack).reverse();
+  bs.forEach((b, i) => { b.classList.toggle("done", i <= RS); b.classList.toggle("cur", i === RS); });
+  mem.innerHTML = "";
+  for(let i = 0; i <= RS; i++){ const L = LAYERS[i]; const d = document.createElement("div"); d.className = "item" + (i === RS && anim ? " new" : "");
+    d.innerHTML = `<span class="src">${i === 0 ? "start" : "+ " + (L.k === "out" ? "read out" : L.k)}</span><span>${L.t}</span>`; mem.append(d); }
+  $("#rsprev").disabled = RS === 0; $("#rsnext").disabled = RS === LAYERS.length - 1;
+}
+$("#rsnext").addEventListener("click", () => { if(RS < LAYERS.length - 1){ RS++; renderRS(true); } });
+$("#rsprev").addEventListener("click", () => { if(RS > 0){ RS--; renderRS(false); } });
+$("#rsreset").addEventListener("click", () => { RS = 0; renderRS(false); });
+renderRS(false);
+
+/* ---------- 6 next token ---------- */
+const LG = [["Paris",8.2],["France",5.9],["the",4.9],["Europe",4.5],["a",4.1],["London",2.4],["space",1.2]];
+const counts = {};
+function probs(){ return softmax(LG.map(x => x[1]), +$("#temp6").value); }
+function sample(p){ let r = Math.random(), a = 0; for(let i = 0; i < p.length; i++){ a += p[i]; if(r <= a) return i; } return p.length - 1; }
+function renderBars(hit){
+  const p = probs(); const box = $("#bars6"); box.innerHTML = "";
+  LG.forEach(([w], i) => { const r = document.createElement("div"); r.className = "brow" + (i === hit ? " hit" : "");
+    r.innerHTML = `<span>${w}</span><div class="bar"><i style="width:${(p[i]*100).toFixed(1)}%"></i></div><span class="p">${(p[i]*100).toFixed(1)}%</span>`; box.append(r); });
+}
+$("#temp6").addEventListener("input", e => { $("#t6o").textContent = (+e.target.value).toFixed(2); for(const k in counts) delete counts[k]; $("#sampout").textContent = ""; renderBars(); });
+$("#samp1").addEventListener("click", () => { const i = sample(probs()); renderBars(i); $("#sampout").textContent = `Picked: “${LG[i][0]}”`; });
+$("#samp50").addEventListener("click", () => { for(const k in counts) delete counts[k]; const p = probs(); for(let n = 0; n < 50; n++){ const w = LG[sample(p)][0]; counts[w] = (counts[w]||0) + 1; } renderBars(); $("#sampout").textContent = Object.entries(counts).sort((a,b) => b[1]-a[1]).map(([w,c]) => `${w} ×${c}`).join(" · "); });
+renderBars();
+
+const BI = {
+  "The":[["cat",.5],["dog",.3],["model",.2]], "cat":[["sat",.6],["ran",.2],["slept",.2]], "dog":[["ran",.5],["sat",.3],["barked",.2]],
+  "model":[["predicted",.6],["learned",.4]], "sat":[["on",.8],["down",.2]], "ran":[["to",.6],["away",.4]], "slept":[["on",.7],["in",.3]],
+  "barked":[["at",.7],["loudly",.3]], "predicted":[["the",.7],["words",.3]], "learned":[["the",.6],["patterns",.4]],
+  "on":[["the",.8],["a",.2]], "to":[["the",.8],["a",.2]], "in":[["the",.8],["a",.2]], "at":[["the",.9],["a",.1]],
+  "the":[["mat",.4],["park",.25],["cat",.2],["next",.15]], "a":[["mat",.5],["park",.5]], "next":[["word",1]],
+  "down":[[".",1]], "away":[[".",1]], "mat":[[".",1]], "park":[[".",1]], "words":[[".",1]], "patterns":[[".",1]], "loudly":[[".",1]], "word":[[".",1]]
+};
+let GEN = ["The"];
+function renderGen(newest){
+  $("#gen").innerHTML = GEN.map((w, i) => (w === "." ? "" : " ") + (i === GEN.length - 1 && newest ? `<span class="n">${w}</span>` : w)).join("").trim();
+  const done = GEN[GEN.length - 1] === "."; $("#gstep").disabled = done; $("#gauto").disabled = done;
+}
+function step(){
+  const last = GEN[GEN.length - 1]; const opts = BI[last]; if(!opts) return false;
+  const t = +$("#temp6").value; const p = softmax(opts.map(o => Math.log(o[1])), t);
+  const i = sample(p); GEN.push(opts[i][0]);
+  const tr = document.createElement("div");
+  tr.textContent = `after “${last}”: ${opts.map((o, k) => `${o[0]} ${Math.round(p[k]*100)}%`).join(", ")} → picked “${opts[i][0]}”`;
+  $("#gtrace").prepend(tr); renderGen(true); return opts[i][0] !== ".";
+}
+$("#gstep").addEventListener("click", step);
+$("#gauto").addEventListener("click", () => { let n = 0; while(step() && n++ < 20){} });
+$("#greset").addEventListener("click", () => { GEN = ["The"]; $("#gtrace").innerHTML = ""; renderGen(false); });
+renderGen(false);
+
+/* ---------- 7 training ---------- */
+const lsvg = $("#losssvg");
+const X = st => 40 + st*3.6, PY = p => 190 - p*160;
+const pAt = st => { const v = 1/50257 + (0.82 - 1/50257) / (1 + Math.exp(-(st - 45)/9)); return v; };
+const lossAt = st => -Math.log(pAt(st));
+const LY = l => 190 - (l / 11) * 160;
+lsvg.append(s("path", {d:"M40 190 L400 190", style:"stroke:var(--rule)"}), s("path", {d:"M40 190 L40 24", style:"stroke:var(--rule)"}));
+let dl = "", dp = ""; for(let st = 0; st <= 100; st++){ dl += (st ? "L" : "M") + X(st).toFixed(1) + " " + LY(lossAt(st)).toFixed(1) + " "; dp += (st ? "L" : "M") + X(st).toFixed(1) + " " + PY(pAt(st)).toFixed(1) + " "; }
+lsvg.append(s("path", {d:dl, style:"stroke:var(--bad); stroke-width:2.2; fill:none"}), s("path", {d:dp, style:"stroke:var(--accent); stroke-width:2.2; fill:none"}));
+lsvg.append(s("text", {x:46, y:36, style:"fill:var(--bad); font-size:12px"}, "loss"), s("text", {x:396, y:52, "text-anchor":"end", style:"fill:var(--accent); font-size:12px"}, "P(“Paris”)"), s("text", {x:220, y:212, "text-anchor":"middle", style:"fill:var(--muted); font-size:11.5px"}, "training steps →"));
+const vline = s("path", {style:"stroke:var(--ink); stroke-dasharray:3 3"}); const d1 = s("circle", {r:5, class:"dot", style:"fill:var(--bad)"}); const d2 = s("circle", {r:5, class:"dot", style:"fill:var(--accent)"});
+lsvg.append(vline, d1, d2);
+const GUESS = [[0, "“zebra”, “ing”, “7”… (random: it knows nothing yet)"], [25, "“the”, “a”, “,” (learned common words)"], [45, "“France”, “Europe”, “Paris” (learned it's a place)"], [70, "“Paris” (learned the fact)"]];
+function renderLoss(){
+  const st = +$("#step7").value; const p = pAt(st), l = lossAt(st);
+  vline.setAttribute("d", `M${X(st)} 24 L${X(st)} 190`); d1.setAttribute("cx", X(st)); d1.setAttribute("cy", LY(l)); d2.setAttribute("cx", X(st)); d2.setAttribute("cy", PY(p));
+  $("#s7o").textContent = st + "%"; $("#p7").textContent = p < .001 ? "0.002%" : (p*100).toFixed(p < .1 ? 1 : 0) + "%"; $("#l7").textContent = l.toFixed(2);
+  const g = GUESS.filter(x => x[0] <= st).pop();
+  $("#pred7").innerHTML = `<h5>“The Eiffel Tower is in …”</h5><p>Top guesses: ${g[1]}</p>`;
+}
+$("#step7").addEventListener("input", renderLoss); renderLoss();
+
+/* ---------- 8 safety map ---------- */
+const MAP = [
+  {x:10, y:40, w:120, h:60, t:"Training data", u:"Unit 2", d:"<b>Input data filtering</b> removes dangerous content before pretraining. <b>Data poisoning</b> attacks happen here too: about 250 documents can plant a backdoor."},
+  {x:150, y:40, w:110, h:60, t:"Tokens in", u:"Unit 5", d:"<b>Input classifiers</b> screen prompts for jailbreaks and dangerous requests before the model reads them."},
+  {x:280, y:40, w:290, h:60, t:"Layers + residual stream", u:"Unit 4", d:"<b>Interpretability</b>: probes read the stream, SAEs split it into features, steering adds directions, circuits trace how layers connect."},
+  {x:590, y:40, w:120, h:60, t:"Reasoning (CoT)", u:"Unit 4", d:"<b>Chain-of-thought monitoring</b> reads the model's written reasoning for signs of bad intent, while it stays faithful."},
+  {x:730, y:40, w:120, h:60, t:"Output / actions", u:"Unit 5", d:"<b>Output classifiers</b> and <b>AI control</b>: a trusted monitor scores actions and humans audit the most suspicious."},
+  {x:280, y:150, w:290, h:56, t:"The weights (from training)", u:"Unit 2", d:"<b>RLHF, Constitutional AI, deliberative alignment</b> shape the weights so the model behaves well. <b>Evals</b> (Unit 3) test what those weights can and will do."}
+];
+const msvg = $("#mapsvg");
+const mdefs = s("defs"); msvg.append(mdefs); mdefs.innerHTML = '<marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--muted)"/></marker>';
+[[130,70,150],[260,70,280],[570,70,590],[710,70,730]].forEach(([a,y,b]) => msvg.append(s("path", {d:`M${a+2} ${y} L${b-4} ${y}`, style:"stroke:var(--muted); stroke-width:1.5", "marker-end":"url(#ah2)"})));
+msvg.append(s("path", {d:"M425 148 L425 104", style:"stroke:var(--muted); stroke-width:1.5; stroke-dasharray:4 3", "marker-end":"url(#ah2)"}));
+let sel = null;
+MAP.forEach((m, i) => {
+  const g = s("g", {class:"hot", tabindex:"0", role:"button", "aria-label":m.t});
+  g.append(s("rect", {x:m.x, y:m.y, width:m.w, height:m.h, rx:8, style:"fill:var(--bad-soft); stroke:var(--bad); stroke-width:1.5"}));
+  g.append(s("text", {x:m.x + m.w/2, y:m.y + m.h/2 - 2, "text-anchor":"middle", style:"font-family:var(--display); font-weight:700; font-size:14px"}, m.t));
+  g.append(s("text", {x:m.x + m.w/2, y:m.y + m.h/2 + 16, "text-anchor":"middle", style:"font-size:11px; fill:var(--muted)"}, m.u));
+  const act = () => { if(sel) sel.classList.remove("sel"); sel = g; g.classList.add("sel"); $("#mapinfo").innerHTML = `<h5>${m.t} · ${m.u}</h5><p>${m.d}</p>`; };
+  g.addEventListener("click", act); g.addEventListener("keydown", e => { if(e.key==="Enter"||e.key===" "){ e.preventDefault(); act(); } });
+  msvg.append(g);
+});
+msvg.append(s("text", {x:10, y:24, style:"font-size:11.5px; fill:var(--muted)"}, "RUNNING THE MODEL →"), s("text", {x:10, y:178, style:"font-size:11.5px; fill:var(--muted)"}, "SHAPED BY TRAINING ↑"));
+})();
+</script>
+</body>
+</html>
