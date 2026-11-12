@@ -679,14 +679,14 @@ svg rect.f-bad.hot.sel, svg rect.f-acc.hot.sel{stroke:var(--ink) !important}
       <text x="600" y="246" class="t-sm t-bad">Risk: knows it's being tested</text>
     </svg>
     </div>
-    <figcaption><b>Debate evidence is mixed:</b> Khan et al. (2024) found more persuasive debaters led to more truthful answers; Kenton et al. (2024) found that didn't transfer to other tasks.</figcaption>
+    <figcaption><b>Debate evidence is mixed:</b> Khan et al. (2024) found more persuasive debaters led to more truthful answers. Kenton et al. (2024) found that didn't transfer to other tasks.</figcaption>
   </figure>
 
   <h3>Key readings</h3>
   <div class="reads">
     <details class="read"><summary><div class="by">Hastings-Woodhouse · 2025</div><h4>What is input data filtration?</h4></summary><div class="read-body"><p>Collect → audit → exclude → post-train. Limits: we can't predict what models learn, and dual-use knowledge.</p><a class="go" href="https://blog.bluedot.org/p/data-filtration" target="_blank" rel="noopener">Open the reading ↗</a></div></details>
     <details class="read"><summary><div class="by">O'Brien et al. · 2025</div><h4>Deep Ignorance</h4><div class="key">near-random biorisk · 300M-token attack resisted</div></summary><div class="read-body"><p>Filtering builds tamper-resistant safety into open-weight models. Fails against in-context information.</p><a class="go" href="https://deepignorance.ai/" target="_blank" rel="noopener">Open the reading ↗</a></div></details>
-    <details class="read"><summary><div class="by">Chen et al. (Anthropic) · 2025</div><h4>Pretraining data filtering</h4><div class="key">−33% above-chance CBRN knowledge</div></summary><div class="read-body"><p>Classifier removes CBRN data; the threshold is a safety–usefulness dial.</p><a class="go" href="https://alignment.anthropic.com/2025/pretraining-data-filtering/" target="_blank" rel="noopener">Open the reading ↗</a></div></details>
+    <details class="read"><summary><div class="by">Chen et al. (Anthropic) · 2025</div><h4>Pretraining data filtering</h4><div class="key">−33% above-chance CBRN knowledge</div></summary><div class="read-body"><p>Classifier removes CBRN data. The threshold is a safety–usefulness dial.</p><a class="go" href="https://alignment.anthropic.com/2025/pretraining-data-filtering/" target="_blank" rel="noopener">Open the reading ↗</a></div></details>
     <details class="read"><summary><div class="by">Souly et al. · 2025</div><h4>Small samples can poison LLMs</h4><div class="key">250 documents · 72 models trained</div></summary><div class="read-body"><p>Poisoning needs a near-constant number of documents, whatever the model size.</p><a class="go" href="https://www.anthropic.com/research/small-samples-poison" target="_blank" rel="noopener">Open the reading ↗</a></div></details>
     <details class="read"><summary><div class="by">Li-Lian Ang · 2024</div><h4>A simple technical explanation of RLH(AI)F</h4></summary><div class="read-body"><p>Preferences → coach models → parameter updates. A simplified Constitutional AI walkthrough.</p><a class="go" href="https://duckduckgo.com/?q=%22A+simple+technical+explanation+of+RLH%28AI%29F%22+Li-Lian+Ang" target="_blank" rel="noopener">Search for it ↗</a></div></details>
     <details class="read"><summary><div class="by">Hastings-Woodhouse · 2024</div><h4>Problems with RLHF for AI safety</h4></summary><div class="read-body"><p>RLHF trains models to say what we want to hear, and human feedback doesn't scale.</p><a class="go" href="https://duckduckgo.com/?q=%22Problems+with+RLHF+for+AI+safety%22+Hastings-Woodhouse" target="_blank" rel="noopener">Search for it ↗</a></div></details>
@@ -897,7 +897,7 @@ svg rect.f-bad.hot.sel, svg rect.f-acc.hot.sel{stroke:var(--ink) !important}
 <h5>Protections</h5><p>Classifiers screen requests and answers for dangerous biology, and accounts that misuse the model can be banned. There is also security designed to stop the model weights being stolen.</p>
 <h5>Evaluation</h5><p>Before release, models go through knowledge tests and expert red teaming. Anthropic also runs uplift trials. The results are summarised in system cards.</p>
 <h5>Response</h5><p>The policy says that if a model needs protections Anthropic can't yet provide, it won't deploy or keep scaling it until they're in place. On paper that is the most important commitment. In practice there is no hard commitment to pause.</p>
-<h5>Accountability</h5><p>This is the weakest part. There is a Responsible Scaling Officer and some outside testing, but Anthropic largely judges its own models and can rewrite its own policy. Phrases like "significantly help" are hard to pin down from outside. I'd want independent audits and published evaluation results before I'd call it accountable.</p>
+<h5>Accountability</h5><p>This is the weakest part. There is a Responsible Scaling Officer and some outside testing, but Anthropic largely judges its own models and can rewrite its own policy. Phrases like "significantly help" are hard to pin down from outside. I'd want independent audits and published evaluation results before I'd call it accountable. Transluce helped set up the AI Evaluator Forum, which has published minimum conditions for embedding independent evaluators inside frontier labs. That is the kind of fix I mean.</p>
       </div>
     </details>
   </div>
@@ -928,7 +928,7 @@ svg rect.f-bad.hot.sel, svg rect.f-acc.hot.sel{stroke:var(--ink) !important}
       <rect x="604" y="214" width="200" height="46" rx="8" class="box"/><text x="704" y="242" text-anchor="middle">feature: "French"</text>
     </svg>
     </div>
-    <figcaption><b>Features</b> are the concepts a network represents; <b>circuits</b> are how features connect to compute something. Neurons are often <b>polysemantic</b>, so researchers look for directions (features) instead. Finding a feature also lets you <b>steer</b> the model by turning it up or down.</figcaption>
+    <figcaption><b>Features</b> are the concepts a network represents. <b>Circuits</b> are how features connect to compute something. Neurons are often <b>polysemantic</b>, so researchers look for directions (features) instead. Finding a feature also lets you <b>steer</b> the model by turning it up or down.</figcaption>
   </figure>
 
   <h3>Two camps, and a critic</h3>
@@ -982,7 +982,7 @@ svg rect.f-bad.hot.sel, svg rect.f-acc.hot.sel{stroke:var(--ink) !important}
     <details class="read"><summary><div class="by">Rational Animations · 2024</div><h4>What do neural networks really learn?</h4></summary><div class="read-body"><p>Features, circuits and polysemanticity in image models (Olah et al.).</p><a class="go" href="https://duckduckgo.com/?q=%22What+do+neural+networks+really+learn%3F%22+Rational+Animations" target="_blank" rel="noopener">Search for it ↗</a></div></details>
     <details class="read"><summary><div class="by">Hastings-Woodhouse · 2024</div><h4>Introduction to mechanistic interpretability</h4></summary><div class="read-body"><p>The circuits view, sparse autoencoders and feature steering.</p><a class="go" href="https://duckduckgo.com/?q=%22Introduction+to+mechanistic+interpretability%22+Hastings-Woodhouse" target="_blank" rel="noopener">Search for it ↗</a></div></details>
     <details class="read"><summary><div class="by">Robert Wiblin · 2025</div><h4>Neel Nanda on the race to read AI minds</h4></summary><div class="read-body"><p>Where mechanistic interpretability stands and which directions look promising.</p><a class="go" href="https://duckduckgo.com/?q=%22Neel+Nanda+on+the+race+to+read+AI+minds%22+Robert+Wiblin" target="_blank" rel="noopener">Search for it ↗</a></div></details>
-    <details class="read"><summary><div class="by">Hendrycks &amp; Hiscott · 2025</div><h4>The misguided quest for mechanistic interpretability</h4></summary><div class="read-body"><p>Argues the neuron-level program has failed; study AI at higher levels of abstraction.</p><a class="go" href="https://duckduckgo.com/?q=%22The+misguided+quest+for+mechanistic+interpretability%22+Hendrycks+%26+Hiscott" target="_blank" rel="noopener">Search for it ↗</a></div></details>
+    <details class="read"><summary><div class="by">Hendrycks &amp; Hiscott · 2025</div><h4>The misguided quest for mechanistic interpretability</h4></summary><div class="read-body"><p>Argues the neuron-level program has failed. Study AI at higher levels of abstraction.</p><a class="go" href="https://duckduckgo.com/?q=%22The+misguided+quest+for+mechanistic+interpretability%22+Hendrycks+%26+Hiscott" target="_blank" rel="noopener">Search for it ↗</a></div></details>
     <details class="read"><summary><div class="by">Korbak et al. · 2025</div><h4>Chain of thought monitorability</h4></summary><div class="read-body"><p>Reading a model's reasoning is a fragile opportunity worth protecting.</p><a class="go" href="https://arxiv.org/abs/2507.11473" target="_blank" rel="noopener">Open the reading ↗</a></div></details>
     <details class="read"><summary><div class="by">Hubinger et al. · 2023</div><h4>Model organisms of misalignment</h4></summary><div class="read-body"><p>Deliberately create misaligned models to test whether safety techniques work on them.</p><a class="go" href="https://duckduckgo.com/?q=%22Model+organisms+of+misalignment%22+Hubinger+et+al." target="_blank" rel="noopener">Search for it ↗</a></div></details>
     <details class="read"><summary><div class="by">Obeso et al. · 2025</div><h4>Hallucination probes</h4></summary><div class="read-body"><p>Probes on internals flag made-up facts, improving evaluations.</p><a class="go" href="https://duckduckgo.com/?q=%22Hallucination+probes%22+Obeso+et+al." target="_blank" rel="noopener">Search for it ↗</a></div></details>
@@ -1011,6 +1011,10 @@ svg rect.f-bad.hot.sel, svg rect.f-acc.hot.sel{stroke:var(--ink) !important}
 <h5>The evidence</h5><p>Probes can read a surprising amount from activations, including whether a statement is true. The hallucination probes flagged invented entities in long answers word by word, and did it more cheaply than checking every claim with a second model.</p>
 <h5>Uses</h5><p>Warning users when an answer is probably made up, and showing reviewers where to look. The same approach could watch for internal signs of deception in deployment.</p>
 <h5>Robustness</h5><p>Probes can latch onto shortcuts in their training data and fail on new kinds of input. More worrying, if you train a model against a probe, it may learn to hide the signal rather than stop the behaviour. I think probes are best used as a monitor you never optimise against. More like a smoke alarm than a thermostat.</p>
+<h5>Where the field is heading</h5><p>Reading the research agendas of three groups changed how I see this. Anthropic's interpretability team started by mapping mechanisms and is now trying to turn a model's internal state into plain language. Their natural language autoencoders train Claude to translate its own activations into text, with the aim of catching cases where what a model says differs from what it is doing.</p>
+<p>Goodfire go further and use internals to shape the model, not only to watch it. Their features as rewards work used interpretability signals to reduce hallucinations during training. They have also deployed monitors on production models, and shown that probes can catch reward hacking at scale. That is exactly the thermostat I was wary of above. I can see the appeal, because a signal you only ever watch is a signal you never fully use. I'd still want very careful checks that the model hasn't simply learned to hide the feature.</p>
+<p>Transluce come at it from oversight. They want to train models whose whole job is answering questions about another model, like whether it is sandbagging or whether its chain of thought is doing any real work. They are a nonprofit, and they care a lot about this being done independently of the labs.</p>
+<p>If I had to bet, the future of probes is less one researcher training a classifier and more an AI assistant running thousands of these experiments for us. Which brings back the oldest question in neuroscience. Who checks the decoder?</p>
       </div>
     </details>
   </div>
@@ -1181,7 +1185,7 @@ svg rect.f-bad.hot.sel, svg rect.f-acc.hot.sel{stroke:var(--ink) !important}
 <p class="pick">The capability I'd target is telling tests apart from real use.</p>
 <p>If a model can't tell the difference, its good behaviour in evaluations is real evidence, and most of the rest of the chain becomes much easier to catch. It's also the capability that quietly undermines everything in Unit 3.</p>
 <h5>Prevent</h5><p>Keep evaluation data out of training, and be careful about training on detailed descriptions of how AI evaluations work. I'm honestly unsure how far this can go. Situational awareness probably comes from general capability rather than any particular document.</p>
-<h5>Detect</h5><p>Make tests look as much like real use as possible, and check whether behaviour changes when the model is told it's being watched. Reading the model's reasoning helps while that reasoning stays honest. Probes for internal signs of test awareness could be a useful extra check.</p>
+<h5>Detect</h5><p>Make tests look as much like real use as possible, and check whether behaviour changes when the model is told it's being watched. Reading the model's reasoning helps while that reasoning stays honest. Probes for internal signs of test awareness could be a useful extra check. Goodfire found that when models say they think they're being tested, it inflates how safe they look. They have also proposed reading a model's logits as a monitor for evaluation awareness, which makes me more hopeful that this capability can be measured at all.</p>
 <h5>Constrain</h5><p>Assume detection will sometimes fail and use AI control. A trusted monitor scores every action and the most suspicious go to a person. Permissions stay narrow, so no single step can do much harm.</p>
       </div>
     </details>
@@ -1213,7 +1217,7 @@ svg rect.f-bad.hot.sel, svg rect.f-acc.hot.sel{stroke:var(--ink) !important}
   </figure>
 
   <h3>Three kinds of safety researcher</h3>
-  <p>From MATS interviews with 31 AI safety leaders. Most people are a mix; knowing your lean helps you choose a role.</p>
+  <p>From MATS interviews with 31 AI safety leaders. Most people are a mix. Knowing your lean helps you choose a role.</p>
   <figure>
     <div class="scroll">
     <svg viewBox="0 0 860 190" role="img" aria-label="Researcher archetypes: iterators, connectors, amplifiers">
@@ -1268,8 +1272,11 @@ svg rect.f-bad.hot.sel, svg rect.f-acc.hot.sel{stroke:var(--ink) !important}
 <ul>
 <li><b>Redwood Research</b> leads much of the research on control and how to evaluate it.</li>
 <li><b>The UK AI Security Institute</b> works on control and safeguards from the government side.</li>
-<li><b>Safety teams at frontier labs</b> are applying monitoring to their own agents.</li>
+<li><b>Anthropic</b> and other frontier labs are applying monitoring to their own agents. Anthropic's interpretability team is also working on reading a model's reasoning directly.</li>
+<li><b>Goodfire</b> builds interpretability into production monitors, including monitors for cyber misuse and for biosecurity in AI agents.</li>
+<li><b>Transluce</b> is a nonprofit building tools for independent oversight. Docent analyses what AI agents actually do, and they have investigated rogue agent activity in the wild.</li>
 </ul>
+<p>What I like about this mix is that control doesn't have to rely on behaviour alone. Goodfire and Transluce are both trying to let the monitor look inside the model, which could make a weak monitor much harder to fool.</p>
 <p>My own first step would be BlueDot's Technical AI Safety Project course. I'd like to build a simple trusted monitor for a coding agent and measure what it catches and what it misses.</p>
       </div>
     </details>
@@ -1296,7 +1303,7 @@ svg rect.f-bad.hot.sel, svg rect.f-acc.hot.sel{stroke:var(--ink) !important}
 </main>
 </div>
 
-<footer>Built from the public BlueDot Impact Technical AI Safety course pages and the openly available readings. Figures are summaries for study, not reproductions. Chart values come from the cited sources; the Unit 5 threat-map shading is illustrative.</footer>
+<footer>Built from the public BlueDot Impact Technical AI Safety course pages and the openly available readings. Figures are summaries for study, not reproductions. Chart values come from the cited sources. The Unit 5 threat-map shading is illustrative.</footer>
 <script>
 (function(){
 "use strict";
